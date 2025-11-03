@@ -240,7 +240,7 @@ int main(){
 
 ```c
 int main(){
-    shm_id = shmget(2006, sizeof(int), IPC_CREAT | 0777); // Cria um pedido de criação de um espaço de memória partilhado entre processos com as seguintes características: key = 2006 (normalmente tomado como IPC_PRIVATE), tamanho = sizeof(int), flag de criação = IPC_CREAT e flag de premissões = 777. Retorna um id criado a partir das características expecificadas usado para criar, remover e/ou aceder à memória parrtilhada.
+    shm_id = shmget(2006, sizeof(int), IPC_CREAT | 0777); // Cria um pedido de criação de um espaço de memória partilhado entre processos com as seguintes características: key = 2006 (normalmente tomado como IPC_PRIVATE), tamanho = sizeof(int), flag de criação = IPC_CREAT e flag de premissões = 777. Retorna um id criado a partir das características especificadas usado para criar, remover e/ou aceder à memória parrtilhada.
     if (shm_id == -1) /*Verifica se existiu algum erro na criação da memória partilhada*/ {
         perror("shmget failed");
         exit(1);
