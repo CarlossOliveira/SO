@@ -57,6 +57,12 @@
 ### **Criar Processos Filhos (Dar fork do processo pai)**
 
 ```c
+pid_t fork(void); // Cria um novo processo filho que é uma cópia do processo pai. Retorna o PID do processo filho para o processo pai e 0 para o processo filho.
+```
+
+Exemplo:
+
+```c
 #include <stdio.h> // Importar stdio.h para os printfs
 
 #define NUMERO_DE_CHILD_PROCESSES 10
@@ -92,6 +98,12 @@ Não existe nenhum comando para matar explicitamente child processes. O child pr
 ```
 
 ### Spawnar Threads
+
+```c
+int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine) (void *), void *arg); // Cria uma thread. "thread" é o ponteiro para a variável onde se guarda o id da thread criada, "attr" são os atributos da thread (NULL para atributos padrão), "start_routine" é a função que a thread irá executar e "arg" é o argumento a ser passado para a função start_routine.
+```
+
+Exemplo:
 
 ```c
 #include <stdio.h> // Importar stdio.h para os perrors
@@ -137,6 +149,14 @@ Não existe nenhum comando para remover explicitamente threads dado que uma thre
 #### Criação Estática
 
 ```c
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER; // Cria uma variável global para guardar o mutex e inicia o mutex de forma estática e predefinida
+int pthread_mutex_lock(pthread_mutex_t *mutex); // Bloqueia o mutex. "mutex" é o ponteiro para o mutex a ser bloqueado.
+int pthread_mutex_unlock(pthread_mutex_t *mutex); // Desbloqueia o mutex. "mutex" é o ponteiro para o mutex a ser desbloqueado.
+```
+
+Exemplo:
+
+```c
 #include <stdio.h> // Importar stdio.h para os perrors
 #include <errno.h> // Importar errono.h para os perrors
 
@@ -175,6 +195,14 @@ int main() {
 ```
 
 #### Criação Dinâmica
+
+```c
+int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr); // Inicializa o mutex exclusivo. "mutex" é o ponteiro para o mutex a ser inicializado e "attr" são os atributos do mutex (NULL para atributos padrão).
+int pthread_mutex_lock(pthread_mutex_t *mutex); // Bloqueia o mutex. "mutex" é o ponteiro para o mutex a ser bloqueado.
+int pthread_mutex_unlock(pthread_mutex_t *mutex); // Desbloqueia o mutex. "mutex" é o ponteiro para o mutex a ser desbloqueado.
+```
+
+Exemplo:
 
 ```c
 #include <stdio.h> // Importar stdio.h para os perrors
@@ -219,10 +247,16 @@ int main() {
 #### Remover Mutex Exclusivo
 
 ```c
+int pthread_mutex_destroy(pthread_mutex_t *mutex); // Destroi o mutex exclusivo. "mutex" é o ponteiro para o mutex a ser destruído
+```
+
+Exemplo:
+
+```c
 int main() {
     (...)
 
-    pthread_mutex_destroy(&mutex); // Destroi o mutex exclusivo
+    pthread_mutex_destroy(&mutex);
 
     return 0;
 }
@@ -233,6 +267,14 @@ int main() {
 #### Criar e Iniciar Mutex Condicional
 
 #### Criação Estática
+
+```c
+pthread_cond_t cond = PTHREAD_COND_INITIALIZER; // Cria uma variável global para guardar o mutex condicional e inicia o mutex condicional de forma estática e predefinida
+int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex); // Espera pela condição. "cond" é o ponteiro para o mutex condicional e "mutex" é o ponteiro para o mutex exclusivo associado.
+int pthread_cond_signal(pthread_cond_t *cond); // Sinaliza a condição. "cond" é o ponteiro para o mutex condicional.
+```
+
+Exemplo:
 
 ```c
 #include <stdio.h> // Importar stdio.h para os perrors
@@ -303,6 +345,14 @@ int main() {
 ```
 
 #### Criação Dinâmica
+
+```c
+int pthread_cond_init(pthread_cond_t *cond, const pthread_condattr_t *attr);  // Inicializa o mutex condicional. "cond" é o ponteiro para o mutex condicional a ser inicializado e "attr" são os atributos do mutex condicional (NULL para atributos padrão).
+int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex); // Espera pela condição. "cond" é o ponteiro para o mutex condicional e "mutex" é o ponteiro para o mutex exclusivo associado.
+int pthread_cond_signal(pthread_cond_t *cond); // Sinaliza a condição. "cond" é o ponteiro para o mutex condicional.
+```
+
+Exemplo:
 
 ```c
 #include <stdio.h> // Importar stdio.h para os perrors
@@ -381,6 +431,12 @@ int main() {
 #### Remover Mutex Condicional
 
 ```c
+int pthread_cond_destroy(pthread_cond_t *cond); // Destroi o mutex condicional. "cond" é o ponteiro para o mutex condicional a ser destruído
+```
+
+Exemplo:
+
+```c
 int main() {
     (...)
 
@@ -400,6 +456,14 @@ int main() {
 ### **Semáforos Não Nomeados (Unnamed Semaphores)**
 
 #### Criar e dar Attach em Semáforos Não Nomeados
+
+```c
+int sem_init(sem_t *sem, int pshared, unsigned int value); // Inicia o semáforo não nomeado. "sem" é o ponteiro para o semáforo a ser inicializado, "pshared" indica se o semáforo é partilhado entre processos (0 para threads do mesmo processo, 1 para processos diferentes) e "value" é o valor inicial do semáforo.
+int sem_wait(sem_t *sem); // Decrementa o semáforo. "sem" é o ponteiro para o semáforo retornado pela função sem_init
+int sem_post(sem_t *sem); // Incrementa o semáforo. "sem" é o ponteiro para o semáforo retornado pela função sem_init
+```
+
+Exemplo:
 
 ```c
 #include <stdio.h> // Importar stdio.h para os printfs e perrors
@@ -443,6 +507,12 @@ int main() {
 #### Remover e/ou dar Detach Semáforos Não Nomeados
 
 ```c
+int sem_destroy(sem_t *sem); // "sem" é o ponteiro para o semáforo a ser destruído
+```
+
+Exemplo:
+
+```c
 int main() {
     (...)
 
@@ -456,10 +526,25 @@ int main() {
 #### Criar e dar Attach Semáforos Nomeados
 
 ```c
+sem_t *sem_open(const char *name, int oflag, mode_t mode, unsigned int value); // Cria o semáforo nomeado. "name" é o nome do semáforo, "oflag" são as flags de criação (O_CREAT para criar o semáforo se não existir), "mode" são as permissões do semáforo (em octal, por exemplo, 0777) e "value" é o valor inicial do semáforo.
+int sem_wait(sem_t *sem); // Decrementa o semáforo. "sem" é o ponteiro para o semáforo retornado pela função sem_open
+int sem_post(sem_t *sem); // Imcrementa o semáforo. "sem" é o ponteiro para o semáforo retornado pela função sem_open
+```
+
+Exemplo:
+
+```c
 
 ```
 
 #### Remover e/ou dar Detach Semáforos Nomeados
+
+```c
+int sem_close(sem_t *sem); // Sai do semáforo nomeado. "sem" é o ponteiro para o semáforo retornado pela função sem_open
+int sem_unlink(const char *name); // Apaga o semáforo nomeado do sistema. "name" é o nome do semáforo a ser removido
+```
+
+Exemplo:
 
 ```c
 
@@ -474,8 +559,15 @@ int main() {
 ### Criar e dar Attach em blocos de Memória Partilhada
 
 ```c
+int shmget(key_t key, size_t size, int shmflg); // Cria um id para a criação e/ou entrada num segmento de memória partilhada. "key" é a chave única para identificar o segmento de memória partilhada, "size" é o tamanho do segmento em bytes e "shmflg" são as flags de criação e permissões (IPC_CREAT para criar o segmento se não existir e as permissões em octal, por exemplo, 0777).
+void *shmat(int shmid, const void *shmaddr, int shmflg); // Entra e/ou cria no segmento de memória partilhada referente ao id passado por parâmetro. "shmid" é o id do segmento de memória partilhada retornado pela função shmget, "shmaddr" é o endereço onde se deseja anexar o segmento (NULL para deixar o sistema escolher) e "shmflg" são as flags de anexação (0 para anexação padrão).
+```
+
+Exemplo:
+
+```c
 int main(){
-    shm_id = shmget(2006, sizeof(int), IPC_CREAT | 0777); // Cria um pedido de criação de um espaço de memória partilhado entre processos com as seguintes características: key = 2006 (normalmente tomado como IPC_PRIVATE), tamanho = sizeof(int), flag de criação = IPC_CREAT e flag de premissões = 777. Retorna um id criado a partir das características expecificadas usado para criar, remover e/ou aceder à memória parrtilhada.
+    shm_id = shmget(2006, sizeof(int), IPC_CREAT | 0777); // Cria um pedido de criação de um espaço de memória partilhada entre processos com as seguintes características: key = 2006 (normalmente tomado como IPC_PRIVATE), tamanho = sizeof(int), flag de criação = IPC_CREAT e flag de premissões = 777. Retorna um id criado a partir das características expecificadas usado para criar, remover e/ou aceder à memória parrtilhada.
     if (shm_id == -1) /*Verifica se existiu algum erro na criação da memória partilhada*/ {
         perror("shmget failed");
         exit(1);
@@ -489,6 +581,13 @@ int main(){
 ```
 
 ### Apagar e/ou saír de um bloco de Memória Partilhada
+
+```c
+int shmdt(const void *shmaddr); // Sai do espaço de memória partilhada. "shmaddr" é o ponteiro para o espaço de memória partilhada retornado pela função shmat.
+int shmctl(int shmid, int cmd, struct shmid_ds *buf); // Apaga o espaço de memória partilhada. "shmid" é o id do espaço de memória partilhada retornado pela função shmget, "cmd" é a operação a ser realizada (IPC_RMID para apagar o espaço de memória partilhada) e "buf" é um ponteiro para uma estrutura de dados usada para obter ou definir informações sobre o segmento de memória partilhada (pode ser NULL se não for necessário).
+```
+
+Exemplo:
 
 ```c
 int main(){
@@ -510,7 +609,13 @@ int main(){
 
 ### Criar Signal Handlers
 
+```c
+sighandler_t signal(int signum, sighandler_t handler); // Cria um signal handler. "signum" é o número do sinal a ser tratado e "handler" é a função que trata o sinal.
+```
+
 #### Tratar de todos os sinais numa função
+
+Exemplo:
 
 ```c
 #include <string.h> // Importar string.h para os printfs
@@ -539,6 +644,8 @@ int main(){
 ```
 
 #### Tratar dos sinais em funções distintas
+
+Exemplo:
 
 ```c
 #include <stdio.h> // Importar stdio.h para os printfs
@@ -578,6 +685,14 @@ int main(){
 ### Bloquear e Desbloquear o Recebimento de Sinais
 
 ```c
+int sigprocmask(int how, const sigset_t *set, sigset_t *oldset); // "how" pode ser SIG_BLOCK (bloquear), SIG_UNBLOCK (desbloquear) ou SIG_SETMASK (definir a máscara de sinais), "set" é o conjunto de sinais a bloquear/desbloquear e "oldset" é onde se guarda a máscara de sinais anterior.
+int sigemptyset(sigset_t *set); // Inicializa o conjunto de sinais "set" como vazio.
+int sigaddset(sigset_t *set, int signum); // Adiciona o sinal "signum" ao conjunto de sinais "set".
+```
+
+Exemplo:
+
+```c
 #include <stdio.h> // Importar stdio.h para os printfs
 
 int main() {
@@ -604,6 +719,12 @@ int main() {
 #### Para Processos
 
 ```c
+int kill(pid_t pid, int sig); // Enviar sinal "sig" para o processo com PID "pid".
+```
+
+Exemplo:
+
+```c
 int main() {
     pid_t target_pid = 12345; // PID do processo de destino
     kill(target_pid, SIGUSR1); // Envia o sinal SIGUSR1
@@ -612,6 +733,12 @@ int main() {
 ```
 
 #### Para Threads
+
+```c
+int pthread_kill(pthread_t thread, int sig); // Enviar sinal "sig" para a thread com ID "thread".
+```
+
+Exemplo:
 
 ```c
 #include <pthread.h> // Importar pthread.h para a criação de threads
