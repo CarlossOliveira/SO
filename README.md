@@ -762,12 +762,14 @@ int main() {
 
 ## **TABELA DE RESUMO**
 
-| Conceito              | Biblioteca Principal | Tipo de Sincronização  | Escopo de Ação          | Utilização Típica                        |
-| --------------------- | -------------------- | ---------------------- | ----------------------- | ---------------------------------------- |
-| **Sinais**            | `<signal.h>`         | Assíncrona             | Processo ou Sistema     | Comunicação e gestão de eventos externos |
-| **Shared Memory**     | `<sys/shm.h>`        | Direta (memória comum) | Entre processos         | Partilha de dados entre processos        |
-| **Mutex**             | `<pthread.h>`        | Exclusiva (bloqueio)   | Dentro de threads       | Evitar acesso concorrente a dados        |
-| **Mutex Condicional** | `<pthread.h>`        | Exclusiva + espera     | Dentro de threads       | Esperar eventos entre threads            |
-| **Fork**              | `<unistd.h>`         | Nenhuma (duplicação)   | Cria novo processo      | Processamento paralelo isolado           |
-| **Semáforo**          | `<semaphore.h>`      | Contador controlado    | Entre processos/threads | Controlar número de acessos simultâneos  |
-| **Thread**            | `<pthread.h>`        | Partilha memória       | Dentro de um processo   | Execução concorrente leve                |
+| **Tema** | **Funções Principais** | **Bibliotecas Necessárias** | **Descrição / Observações** |
+|-----------|------------------------|------------------------------|------------------------------|
+| **Sinais (Signals)** | `signal()`, `kill()`, `sigaction()`, `pause()`, `raise()` | `<signal.h>` | Comunicação entre processos. `kill(pid, sig)` envia sinal. `signal(SIGINT, handler)` define tratador. |
+| **Bloqueio de Sinais** | `sigemptyset()`, `sigaddset()`, `pthread_sigmask()` | `<signal.h>` | Cria máscara de sinais para bloquear/permitir certos sinais. |
+| **Threads** | `pthread_create()`, `pthread_join()`, `pthread_exit()` | `<pthread.h>` | Cria threads num processo. `pthread_create(&tid, NULL, func, arg)` → cria nova thread. |
+| **Mutexes** | `pthread_mutex_init()`, `pthread_mutex_lock()`, `pthread_mutex_unlock()`, `pthread_mutex_destroy()` | `<pthread.h>` | Exclusão mútua: protege regiões críticas. |
+| **Variáveis Condicionais** | `pthread_cond_init()`, `pthread_cond_wait()`, `pthread_cond_signal()`, `pthread_cond_broadcast()`, `pthread_cond_destroy()` | `<pthread.h>` | Sincronizam threads com base em condições; usadas com mutexes. |
+| **Semáforos** | `sem_init()`, `sem_wait()`, `sem_post()`, `sem_destroy()` | `<semaphore.h>` | Controlam acesso a recursos partilhados. `sem_init(&sem, 0, N)` cria semáforo com valor inicial `N`. |
+| **Memória Partilhada (SHM)** | `shmget()`, `shmat()`, `shmdt()`, `shmctl()` | `<sys/ipc.h>`, `<sys/shm.h>` | Partilha memória entre processos. `shmget(key, size, IPC_CREAT \| 0666)` cria/obtém segmento. |
+| **Fork (Processos)** | `fork()`, `wait()`, `waitpid()` | `<unistd.h>`, `<sys/wait.h>` | Cria novo processo. Retorna 0 ao filho e PID ao pai. |
+| **Funções Auxiliares** | `getpid()`, `getppid()`, `sleep()`, `perror()` | `<unistd.h>`, `<stdio.h>` | Identificação e temporização de processos. |
