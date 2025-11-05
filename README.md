@@ -2,59 +2,59 @@
 
 ## Índice
 
-1. [Processos Filhos (Child Processes with Fork)](#processos-Filhos-child-processes-with-fork)
-   - [Include Necessário](#include-necessário)
-   - [Criar Processos Filhos](#criar-processos-Filhos-dar-fork-do-processo-pai)
-   - [Remover Processos Filhos](#remover-processos-Filhos)
-2. [Threads (Tasks)](#threads-tasks)
-   - [Include Necessário](#include-necessário-1)
+1. [**Processos Filhos (Child Processes with Fork)**](#processos-filhos-child-processes-with-fork)
+   - [Criar Processos Filhos](#criar-processos-filhos-dar-fork-do-processo-pai)
+   - [Remover Processos Filhos](#remover-processos-filhos)
+2. [**Threads (Tasks)**](#threads-tasks)
    - [Spawnar Threads](#spawnar-threads)
    - [Remover Threads](#remover-threads)
-   - [Mutex Exclusivo](#mutex-exclusivo)
-     - [Criar Mutex Exclusivo](#criar-mutex-exclusivo)
+   - [**Mutex Exclusivo**](#mutex-exclusivo)
+     - [Criar e Iniciar Mutex Exclusivo](#criar-e-iniciar-mutex-exclusivo)
      - [Remover Mutex Exclusivo](#remover-mutex-exclusivo)
-   - [Mutex Condicional](#mutex-condicional)
-     - [Criar Mutex Condicional](#criar-mutex-condicional)
+   - [**Mutex Condicional**](#mutex-condicional)
+     - [Criar e Iniciar Mutex Condicional](#criar-e-iniciar-mutex-condicional)
      - [Remover Mutex Condicional](#remover-mutex-condicional)
-3. [Semáforos (Semaphores)](#semáforos-semaphores)
-   - [Include Necessário](#include-necessário-2)
-   - [Semáforos Não Nomeados (Unnamed Semaphores)](#semáforos-não-nomeados-unnamed-semaphores)
+3. [**Semáforos (Semaphores)**](#semáforos-semaphores)
+   - [**Semáforos Não Nomeados (Unnamed Semaphores)**](#semáforos-não-nomeados-unnamed-semaphores)
      - [Criar e dar Attach em Semáforos Não Nomeados](#criar-e-dar-attach-em-semáforos-não-nomeados)
      - [Remover e/ou dar Detach Semáforos Não Nomeados](#remover-eou-dar-detach-semáforos-não-nomeados)
-   - [Semáforos Nomeados (Named Semaphores)](#semáforos-nomeados-named-semaphores)
+   - [**Semáforos Nomeados (Named Semaphores)**](#semáforos-nomeados-named-semaphores)
      - [Criar e dar Attach Semáforos Nomeados](#criar-e-dar-attach-semáforos-nomeados)
      - [Remover e/ou dar Detach Semáforos Nomeados](#remover-eou-dar-detach-semáforos-nomeados)
-4. [Memória Partilhada (Shared Memory)](#memória-partilhada-shared-memory)
-   - [Include Necessário](#include-necessário-3)
+4. [**Memória Partilhada (Shared Memory)**](#memória-partilhada-shared-memory)
      - [Criar e dar Attach em blocos de Memória Partilhada](#criar-e-dar-attach-em-blocos-de-memória-partilhada)
      - [Apagar e/ou saír de um bloco de Memória Partilhada](#apagar-eou-saír-de-um-bloco-de-memória-partilhada)
-5. [Sinais (Signals)](#sinais-signals)
-   - [Include Necessário](#include-necessário-4)
+5. [**Sinais (Signals)**](#sinais-signals)
      - [Criar Signal Handlers](#criar-signal-handlers)
-     - [Bloquear e Desbloquear Sinais](#bloquear-e-desbloquear-sinais)
+     - [Bloquear e Desbloquear o Recebimento de Sinais](#bloquear-e-desbloquear-o-recebimento-de-sinais)
      - [Enviar Sinais](#enviar-sinais)
        - [Enviar Sinais para Processos](#para-processos)
        - [Enviar Sinais para Threads](#para-threads)
-6. [Pipes]
-   - [Include Necessário]
-   - [Pipes sem Nome (Unnamed Pipes)]
+6. [**Pipes**]
+   - [**Pipes sem Nome (Unnamed Pipes)**]
      - [Criar e dar Attach em Pipes sem Nome]
      - [Remover e/ou dar Attach em Pipes sem Nome]
-   - [Pipes com Nome (Named Pipes)]
+   - [**Pipes com Nome (Named Pipes)**]
      - [Criar e dar Attach em Pipes com Nome]
      - [Remover e/ou dar Attach em Pipes com Nome]
-7. [Tabela de Resumo](#tabela-de-resumo)
+7. [**Filas de Mensagens (Message Queues)**]
+   - [Criar e dar Attach em Filas de Mensagens]
+   - [Enviar Mensagens]
+   - [Ler Mensagens]
+   - [Remover e/ou dar Detach em Filas de Mensagens]
+8. [**Ficheiros Mapeados na Memória (Memory Mapped Files)**]
+   - [Criar e dar Attach em Memory Mapped Files]
+   - [Remover e/ou dar Detach em Memory Mapped Files]
+9. [**Tabela de Resumo**](#tabela-de-resumo)
 
 ## Processos Filhos (Child Processes with Fork)
 
-### Include Necessário
-
 ```c
 #include <unistd.h>
-#include <sys/wait.h> // Necessário para mitigar a orfandade dos processos filhos.
+#include <sys/wait.h> // Necessário para mitigar a orfandade dos processos filhos
 ```
 
-### Criar Processos Filhos (Dar fork do processo pai)
+### **Criar Processos Filhos (Dar fork do processo pai)**
 
 ```c
 #include <stdio.h> // Importar stdio.h para os printfs
@@ -63,18 +63,17 @@
 
 pid_t lista_de_child_processes[NUMERO_DE_CHILD_PROCESSES];
 
-int main(){
-    // Criar os processos Filhos:
-    for (int child=0; child<NUMERO_DE_CHILD_PROCESSES; child++){
-
-        if ((lista_de_child_processes[child] = fork())==0) /* Após criar o child process entra nele e executa o código */ {
+int main() {
+    // Criar os processos filhos:
+    for (int child = 0; child < NUMERO_DE_CHILD_PROCESSES; child++) {
+        if ((lista_de_child_processes[child] = fork()) == 0) /* Após criar o child process entra nele e executa o código */ {
             printf("Eu sou a criança número %i, o meu PID é %d e o PID do meu pai é %d.", child, getpid(), getppid());
             exit(0); // Termina a execução e "mata-se"
         }
     }
 
-    // Espera pelos Child Processes antes de terminar
-    for (int child=0; child<NUMERO_DE_CHILD_PROCESSES; child++){
+    // Espera pelos Child Processes antes de terminar:
+    for (int child = 0; child < NUMERO_DE_CHILD_PROCESSES; child++) {
         wait(NULL);
     }
     return 0;
@@ -86,9 +85,7 @@ int main(){
 
 Não existe nenhum comando para matar explicitamente child processes. O child process só é efetivamente removido uma vez que execute um exit(0) para terminar o processo ou uma vez que receba um SIGKILL.
 
-## Threads (Tasks)
-
-### Include Necessário
+## **Threads (Tasks)**
 
 ```c
 #include <pthread.h>
@@ -97,14 +94,16 @@ Não existe nenhum comando para matar explicitamente child processes. O child pr
 ### Spawnar Threads
 
 ```c
+#include <stdio.h> // Importar stdio.h para os perrors
+#include <errno.h> // Importar errono.h para os perrors
+
 #define NUMERO_DE_THREADS 5
 
 pthread_t lista_de_threads[N_DE_THREADS];
 
-void* tarefa(void* argumento) {
+void* tarefa(int* argumento) {
     if (argumento!=NULL) {
-        (int*)argumento;
-        while(argumentos<=100) {
+        while(argumentos <= 100) {
             argumento++;
         }
     }
@@ -113,11 +112,13 @@ void* tarefa(void* argumento) {
 
 int main() {
     int incrementador = 1;
-    for (int thread=0; thread<NUMERO_DE_THREADS; thread++){
-        pthread_create(&lista_de_threads[thread], NULL, tarefa, &incrementador);
+    for (int thread = 0; thread < NUMERO_DE_THREADS; thread++) {
+        if ((pthread_create(&lista_de_threads[thread], NULL, tarefa, &incrementador /*Este argumento é onde se passam os parâmetros para a função a ser executada pela thread*/)) == -1) /* Verifica se houve erro no spawn da thread*/ {
+            perror("Erro ao criar uma thread!");
+        }
     }
 
-    for (int thread=0; thread<NUMERO_DE_THREADS; thread++){
+    for (int thread = 0; thread < NUMERO_DE_THREADS; thread++) {
         pthread_join(&lista_de_threads[thread], NULL); // Espera que todas as threads retornem do processo de execução
     }
 
@@ -129,73 +130,309 @@ int main() {
 
 Não existe nenhum comando para remover explicitamente threads dado que uma thread é apenas uma "linha de execução" de um processo, ou seja, uma thread só é efetivamente removida quando o processo que spawnou a thread termina ou quando o trabalho da thread é concluído e ela retorna.
 
-### Mutex Exclusivo
+### **Mutex Exclusivo**
 
-#### Criar Mutex Exclusivo
+#### Criar e Iniciar Mutex Exclusivo
+
+#### Criação Estática
 
 ```c
+#include <stdio.h> // Importar stdio.h para os perrors
+#include <errno.h> // Importar errono.h para os perrors
 
+#define NUMERO_DE_THREADS 5
+
+pthread_t lista_de_threads[N_DE_THREADS];
+
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER; // Cria uma variável global para guardar o mutex e inicia o mutex
+
+void* tarefa(int* argumento) {
+    if (argumento != NULL) {
+        while(argumento <= 100) {
+            pthread_mutex_lock(&mutex); // Bloqueia o mutex
+            printf("Valor no incrementador: %i", argumento);
+            argumento++;
+            pthread_mutex_unlock(&mutex); // Desbloqueia o Mutex
+        }
+    }
+    return NULL;
+}
+
+int main() {
+    int incrementador = 1;
+    for (int thread = 0; thread < NUMERO_DE_THREADS; thread++) {
+        if ((pthread_create(&lista_de_threads[thread], NULL, tarefa, &incrementador /*Este argumento é onde se passam os parâmetros para a função a ser executada pela thread*/)) == -1) /*Verifica se houve erro no spawn da thread*/ {
+            perror("Erro ao criar uma thread!");
+        }
+    }
+
+    for (int thread = 0; thread < NUMERO_DE_THREADS; thread++) {
+        pthread_join(&lista_de_threads[thread], NULL); // Espera que todas as threads retornem do processo de execução
+    }
+
+    (...)
+}
+```
+
+#### Criação Dinâmica
+
+```c
+#include <stdio.h> // Importar stdio.h para os perrors
+#include <errno.h> // Importar errono.h para os perrors
+
+#define NUMERO_DE_THREADS 5
+
+pthread_t lista_de_threads[N_DE_THREADS];
+
+void* tarefa(int* argumento) {
+    if (argumento != NULL) {
+        while(argumento <= 100) {
+            pthread_mutex_lock(&mutex); // Bloqueia o mutex
+            printf("Valor no incrementador: %i", argumento);
+            argumento++;
+            pthread_mutex_unlock(&mutex); // Desbloqueia o Mutex
+        }
+    }
+    return NULL;
+}
+
+int main() {
+    // Criar os mutexs:
+    pthread_mutex_t mutex; // Inicializa uma variável para guardar o mutex
+    pthread_mutex_init(&mutex, NULL);  // Inicializa o mutex com os atributos a NULL
+    
+    int incrementador = 1;
+    for (int thread = 0; thread < NUMERO_DE_THREADS; thread++) {
+        if ((pthread_create(&lista_de_threads[thread], NULL, tarefa, &incrementador /*Este argumento é onde se passam os parâmetros para a função a ser executada pela thread*/)) == -1) /*Verifica se houve erro no spawn da thread*/ {
+            perror("Erro ao criar uma thread!");
+        }
+    }
+
+    for (int thread = 0; thread < NUMERO_DE_THREADS; thread++) {
+        pthread_join(&lista_de_threads[thread], NULL); // Espera que todas as threads retornem do processo de execução
+    }
+    
+    (...)
+}
 ```
 
 #### Remover Mutex Exclusivo
 
 ```c
+int main() {
+    (...)
 
+    pthread_mutex_destroy(&mutex); // Destroi o mutex exclusivo
+
+    return 0;
+}
 ```
 
-### Mutex Condicional
+### **Mutex Condicional**
 
-#### Criar Mutex Condicional
+#### Criar e Iniciar Mutex Condicional
+
+#### Criação Estática
 
 ```c
+#include <stdio.h> // Importar stdio.h para os perrors
+#include <errno.h> // Importar errono.h para os perrors
 
+#define NUMERO_DE_THREADS_PRODUTORAS 5
+#define NUMERO_DE_THREADS_CONSUMIDORAS 3
+
+pthread_t lista_de_threads_produtoras[NUMERO_DE_THREADS_PRODUTORAS];
+pthread_t lista_de_threads_consumidoras[NUMERO_DE_THREADS_CONSUMIDORAS];
+
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER; // Cria uma variável global para guardar o mutex e inicia o mutex
+pthread_cond_t cond = PTHREAD_COND_INITIALIZER; // Cria uma variável global para guardar o mutex condicional e inicia o mutex condicional
+
+void* produtor(int* argumento) {
+    if (argumento != NULL) {
+        while(argumento <= 100) {
+            pthread_mutex_lock(&mutex); // Bloqueia o mutex
+            printf("Valor no incrementador: %i", argumento);
+            pthread_cond_signal(&cond); // Sinaliza a condição (desbloqueia uma thread que esteja à espera da condição)
+            argumento++;
+            pthread_mutex_unlock(&mutex); // Desbloqueia o Mutex
+        }
+    }
+    return NULL;
+}
+
+void *consumidor(int* argumento) {
+    if (argumento != NULL) {
+        while(argumento <= 100) {
+            pthread_mutex_lock(&mutex); // Bloqueia o mutex
+            pthread_cond_wait(&cond, &mutex); // Espera pela condição (desbloqueia o mutex e bloqueia a thread até que a condição seja sinalizada)
+            printf("Consumidor a processar o valor: %i", argumento);
+            pthread_mutex_unlock(&mutex); // Desbloqueia o Mutex
+        }
+    }
+    return NULL;
+}
+
+int main() {
+    // Criar as threads produtoras:
+    int incrementador = 1;
+    for (int thread = 0; thread < NUMERO_DE_THREADS_PRODUTORAS; thread++) {
+        if ((pthread_create(&lista_de_threads_produtoras[thread], NULL, produtor, &incrementador /*Este argumento é onde se passam os parâmetros para a função a ser executada pela thread*/)) == -1) /*Verifica se houve erro no spawn da thread*/ {
+            perror("Erro ao criar uma thread!");
+        }
+    }
+
+    // Criar as threads consumidoras:
+    for (int thread = 0; thread < NUMERO_DE_THREADS_CONSUMIDORAS; thread++) {
+        if ((pthread_create(&lista_de_threads_consumidoras[thread], NULL, consumidor, &incrementador)) == -1) {
+            perror("Erro ao criar uma thread!");
+        }
+    }
+
+    // Esperar que todas as threads produtoras terminem:
+    for (int thread = 0; thread < NUMERO_DE_THREADS_PRODUTORAS; thread++) {
+        pthread_join(&lista_de_threads_produtoras[thread], NULL);
+    }
+
+    // Esperar que todas as threads consumidoras terminem:
+    for (int thread = 0; thread < NUMERO_DE_THREADS_CONSUMIDORAS; thread++) {
+        pthread_join(&lista_de_threads_consumidoras[thread], NULL);
+    }
+
+    (...)
+}
+```
+
+#### Criação Dinâmica
+
+```c
+#include <stdio.h> // Importar stdio.h para os perrors
+#include <errno.h> // Importar errono.h para os perrors
+
+#define NUMERO_DE_THREADS_PRODUTORAS 5
+#define NUMERO_DE_THREADS_CONSUMIDORAS 3
+
+pthread_t lista_de_threads_produtoras[NUMERO_DE_THREADS_PRODUTORAS];
+pthread_t lista_de_threads_consumidoras[NUMERO_DE_THREADS_CONSUMIDORAS];
+
+void* produtor(int* argumento) {
+    if (argumento != NULL) {
+        while(argumento <= 100) {
+            pthread_mutex_lock(&mutex); // Bloqueia o mutex
+            printf("Valor no incrementador: %i", argumento);
+            pthread_cond_signal(&cond); // Sinaliza a condição (desbloqueia uma thread que esteja à espera da condição)
+            argumento++;
+            pthread_mutex_unlock(&mutex); // Desbloqueia o Mutex
+        }
+    }
+    return NULL;
+}
+
+void *consumidor(int* argumento) {
+    if (argumento != NULL) {
+        while(argumento <= 100) {
+            pthread_mutex_lock(&mutex); // Bloqueia o mutex
+            pthread_cond_wait(&cond, &mutex); // Espera pela condição (desbloqueia o mutex e bloqueia a thread até que a condição seja sinalizada)
+            printf("Consumidor a processar o valor: %i", argumento);
+            pthread_mutex_unlock(&mutex); // Desbloqueia o Mutex
+        }
+    }
+    return NULL;
+}
+
+int main() {
+    // Criar os mutexs:
+    // mutex condicional
+    pthread_cond_t cond; // Inicializa uma variável para guardar o mutex condicional
+    pthread_cond_init(&cond, NULL); // Inicializa o mutex condicional com os atributos a NULL
+
+    // mutex exclusivo
+    pthread_mutex_t mutex; // Inicializa uma variável para guardar o mutex
+    pthread_mutex_init(&mutex, NULL);  // Inicializa o mutex com os atributos a NULL
+
+    // Criar as threads produtoras:
+    int incrementador = 1;
+    for (int thread = 0; thread < NUMERO_DE_THREADS_PRODUTORAS; thread++) {
+        if ((pthread_create(&lista_de_threads_produtoras[thread], NULL, produtor, &incrementador /*Este argumento é onde se passam os parâmetros para a função a ser executada pela thread*/)) == -1) /*Verifica se houve erro no spawn da thread*/ {
+            perror("Erro ao criar uma thread!");
+        }
+    }
+
+    // Criar as threads consumidoras:
+    for (int thread = 0; thread < NUMERO_DE_THREADS_CONSUMIDORAS; thread++) {
+        if ((pthread_create(&lista_de_threads_consumidoras[thread], NULL, consumidor, &incrementador)) == -1) {
+            perror("Erro ao criar uma thread!");
+        }
+    }
+
+    // Esperar que todas as threads produtoras terminem:
+    for (int thread = 0; thread < NUMERO_DE_THREADS_PRODUTORAS; thread++) {
+        pthread_join(&lista_de_threads_produtoras[thread], NULL);
+    }
+
+    // Esperar que todas as threads consumidoras terminem:
+    for (int thread = 0; thread < NUMERO_DE_THREADS_CONSUMIDORAS; thread++) {
+        pthread_join(&lista_de_threads_consumidoras[thread], NULL);
+    }
+
+    (...)
+}
 ```
 
 #### Remover Mutex Condicional
 
 ```c
+int main() {
+    (...)
 
+    pthread_cond_destroy(&cond); // Destroi o mutex condicional
+    pthread_mutex_destroy(&mutex); // Destroi o mutex exclusivo
+
+    return 0;
+}
 ```
 
-## Semáforos (Semaphores)
-
-### Include Necessário
+## **Semáforos (Semaphores)**
 
 ```c
 #include <semaphore.h>
 ```
 
-### Semáforos Não Nomeados (Unnamed Semaphores)
+### **Semáforos Não Nomeados (Unnamed Semaphores)**
 
 #### Criar e dar Attach em Semáforos Não Nomeados
 
 ```c
-#include <stdio.h> // Importar stdio.h para os printfs
+#include <stdio.h> // Importar stdio.h para os printfs e perrors
+#include <errno.h> // Importar errono.h para os perrors
 #include <pthread.h> // Importar pthread.h para a criação de threads
 
 #define NUMERO_DE_THREADS 10
 
-sem_t semaforo; // Declarar globalmente uma variável para guardar o ponteiro para o semáforo.
+sem_t semaforo; // Declarar globalmente uma variável para guardar o ponteiro para o semáforo
 pthread_t lista_de_threads[NUMERO_DE_THREADS];
 
 void* tarefa() {
-    for (int tarefa=0; tarefa<3; tarefa++){
-    sem_wait(&semaforo);
+    for (int tarefa = 0; tarefa < 3; tarefa++) {
+    sem_wait(&semaforo); // Decrementa o semáforo
     sleep(10);
-    sem_post(&semaforo);
+    sem_post(&semaforo); // Incrementa o semáforo
     }
 
     return NULL;
 }
 
 int main() {
-    sem_init(&semaforo, 0, 5); // Inicia um semáforo com 5 espaços.
-
-    for (int thread=0; thread<NUMERO_DE_THREADS; thread++){
-    pthread_create(&lista_de_threads[thread], NULL, tarefa, NULL);
+    if ((sem_init(&semaforo, 0, 5)) == -1) /*Inicia um semáforo com "5 espaços". Verifica também se existiu algum erro na criação do semáforo*/ {
+        perror("Erro a iniciar o semáforo!");
     }
 
-    for (int thread=0; thread<NUMERO_DE_THREADS; thread++){
+    for (int thread = 0; thread < NUMERO_DE_THREADS; thread++) {
+        if ((pthread_create(&lista_de_threads[thread], NULL, tarefa, NULL)) == -1) {
+            perror("Error ao criar uma thread!");
+        }
+    }
+
+    for (int thread = 0; thread < NUMERO_DE_THREADS; thread++) {
         pthread_join(&lista_de_threads[thread], NULL);
     }
 
@@ -206,7 +443,7 @@ int main() {
 #### Remover e/ou dar Detach Semáforos Não Nomeados
 
 ```c
-int main(){
+int main() {
     (...)
 
     sem_destroy(&semaforo); // Destroi o semáforo associado ao ponteiro passado por argumento
@@ -214,7 +451,7 @@ int main(){
 }
 ```
 
-### Semáforos Nomeados (Named Semaphores)
+### **Semáforos Nomeados (Named Semaphores)**
 
 #### Criar e dar Attach Semáforos Nomeados
 
@@ -228,9 +465,7 @@ int main(){
 
 ```
 
-## Memória Partilhada (Shared Memory)
-
-### Include Necessário
+## **Memória Partilhada (Shared Memory)**
 
 ```c
 #include <sys/shm.h>
@@ -240,7 +475,7 @@ int main(){
 
 ```c
 int main(){
-    shm_id = shmget(2006, sizeof(int), IPC_CREAT | 0777); // Cria um pedido de criação de um espaço de memória partilhado entre processos com as seguintes características: key = 2006 (normalmente tomado como IPC_PRIVATE), tamanho = sizeof(int), flag de criação = IPC_CREAT e flag de premissões = 777. Retorna um id criado a partir das características especificadas usado para criar, remover e/ou aceder à memória parrtilhada.
+    shm_id = shmget(2006, sizeof(int), IPC_CREAT | 0777); // Cria um pedido de criação de um espaço de memória partilhado entre processos com as seguintes características: key = 2006 (normalmente tomado como IPC_PRIVATE), tamanho = sizeof(int), flag de criação = IPC_CREAT e flag de premissões = 777. Retorna um id criado a partir das características expecificadas usado para criar, remover e/ou aceder à memória parrtilhada.
     if (shm_id == -1) /*Verifica se existiu algum erro na criação da memória partilhada*/ {
         perror("shmget failed");
         exit(1);
@@ -267,9 +502,7 @@ int main(){
 }
 ```
 
-## Sinais (Signals)
-
-### Include Necessário
+## **Sinais (Signals)**
 
 ```c
 #include <signal.h>
@@ -277,7 +510,7 @@ int main(){
 
 ### Criar Signal Handlers
 
-1. Tratar dos sinais todos numa função:
+#### Tratar de todos os sinais numa função
 
 ```c
 #include <string.h> // Importar string.h para os printfs
@@ -285,12 +518,15 @@ int main(){
 void signal_handler(int signum) {
     if (signum == SIGKILL) {
         printf("Terminal signal received (%i)! Terminating the process", signum);
+        exit(0);
     } else if (signum == SIGUSR1) {
         while(1){
             printf("User defined signal recieved (%d)!", signum);
             printf("--> FORK BOMB INITIATED!!");
             fork();
         }
+    } else {
+        printf("Unhandled signal received (%d)!", signum);
     }
 }
 
@@ -302,7 +538,7 @@ int main(){
 }
 ```
 
-2. Tratar dos sinais em funções separadas:
+#### Tratar dos sinais em funções distintas
 
 ```c
 #include <stdio.h> // Importar stdio.h para os printfs
@@ -339,7 +575,7 @@ int main(){
 }
 ```
 
-### Bloquear e Desbloquear Sinais
+### Bloquear e Desbloquear o Recebimento de Sinais
 
 ```c
 #include <stdio.h> // Importar stdio.h para os printfs
@@ -363,7 +599,7 @@ int main() {
 }
 ```
 
-### Enviar Sinais:
+### Enviar Sinais
 
 #### Para Processos
 
@@ -389,7 +625,7 @@ int main() {
 
     pthread_create(&thread, NULL, tarefa, NULL); // Criar a thread para enviar o sinal
 
-    pthread_kill(thread, SIGUSR1);
+    pthread_kill(thread, SIGUSR1); // Envia o sinal SIGUSR1 para a thread criada
 
     (...)
 
@@ -397,7 +633,7 @@ int main() {
 }
 ```
 
-## TABELA DE RESUMO
+## **TABELA DE RESUMO**
 
 | Conceito              | Biblioteca Principal | Tipo de Sincronização  | Escopo de Ação          | Utilização Típica                        |
 | --------------------- | -------------------- | ---------------------- | ----------------------- | ---------------------------------------- |
