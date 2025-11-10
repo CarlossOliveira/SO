@@ -30,21 +30,21 @@
      - [Enviar Sinais](#enviar-sinais)
        - [Enviar Sinais para Processos](#para-processos)
        - [Enviar Sinais para Threads](#para-threads)
-6. [**Pipes**]
-   - [**Pipes sem Nome (Unnamed Pipes)**]
-     - [Criar e dar Attach em Pipes sem Nome]
-     - [Remover e/ou dar Attach em Pipes sem Nome]
-   - [**Pipes com Nome (Named Pipes)**]
-     - [Criar e dar Attach em Pipes com Nome]
-     - [Remover e/ou dar Attach em Pipes com Nome]
-7. [**Filas de Mensagens (Message Queues)**]
-   - [Criar e dar Attach em Filas de Mensagens]
-   - [Enviar Mensagens]
-   - [Ler Mensagens]
-   - [Remover e/ou dar Detach em Filas de Mensagens]
-8. [**Ficheiros Mapeados na Memória (Memory Mapped Files)**]
-   - [Criar e dar Attach em Memory Mapped Files]
-   - [Remover e/ou dar Detach em Memory Mapped Files]
+6. [**Pipes**](#pipes)
+   - [**Pipes sem Nome (Unnamed Pipes)**](#pipes-sem-nome-unnamed-pipes)
+     - [Criar e dar Attach em Pipes sem Nome](#criar-e-dar-attach-em-pipes-sem-nome)
+     - [Remover e/ou dar Attach em Pipes sem Nome](#remover-eou-dar-attach-em-pipes-sem-nome)
+   - [**Pipes com Nome (Named Pipes)**](#pipes-com-nome-named-pipes)
+     - [Criar e dar Attach em Pipes com Nome](#criar-e-dar-attach-em-pipes-com-nome)
+     - [Remover e/ou dar Attach em Pipes com Nome](#remover-eou-dar-dettach-em-pipes-com-nome)
+7. [**Filas de Mensagens (Message Queues)**](#filas-de-mensagens-message-queues)
+   - [Criar e dar Attach em Filas de Mensagens](#criar-e-dar-attach-em-filas-de-mensagens)
+   - [Enviar Mensagens](#enviar-mensagens)
+   - [Ler Mensagens](#ler-mensagens)
+   - [Remover e/ou dar Detach em Filas de Mensagens](#remover-eou-dar-detach-em-filas-de-mensagens)
+8. [**Ficheiros Mapeados na Memória (Memory Mapped Files)**](#ficheiros-mapeados-na-memória-memory-mapped-files)
+   - [Criar e dar Attach em Memory Mapped Files](#criar-e-dar-attach-em-memory-mapped-files)
+   - [Remover e/ou dar Detach em Memory Mapped Files](#remover-eou-dar-detach-em-memory-mapped-files)
 9. [**Tabela de Resumo**](#tabela-de-resumo)
 
 ## Processos Filhos (Child Processes with Fork)
@@ -144,9 +144,9 @@ Não existe nenhum comando para remover explicitamente threads dado que uma thre
 
 ### **Mutex Exclusivo**
 
-#### Criar e Iniciar Mutex Exclusivo
+### Criar e Iniciar Mutex Exclusivo
 
-#### Criação Estática
+### Criação Estática
 
 ```c
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER; // Cria uma variável global para guardar o mutex e inicia o mutex de forma estática e predefinida
@@ -194,7 +194,7 @@ int main() {
 }
 ```
 
-#### Criação Dinâmica
+### Criação Dinâmica
 
 ```c
 int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr); // Inicializa o mutex exclusivo. "mutex" é o ponteiro para o mutex a ser inicializado e "attr" são os atributos do mutex (NULL para atributos padrão).
@@ -244,7 +244,7 @@ int main() {
 }
 ```
 
-#### Remover Mutex Exclusivo
+### Remover Mutex Exclusivo
 
 ```c
 int pthread_mutex_destroy(pthread_mutex_t *mutex); // Destroi o mutex exclusivo. "mutex" é o ponteiro para o mutex a ser destruído
@@ -264,9 +264,9 @@ int main() {
 
 ### **Mutex Condicional**
 
-#### Criar e Iniciar Mutex Condicional
+### Criar e Iniciar Mutex Condicional
 
-#### Criação Estática
+### Criação Estática
 
 ```c
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER; // Cria uma variável global para guardar o mutex condicional e inicia o mutex condicional de forma estática e predefinida
@@ -344,7 +344,7 @@ int main() {
 }
 ```
 
-#### Criação Dinâmica
+### Criação Dinâmica
 
 ```c
 int pthread_cond_init(pthread_cond_t *cond, const pthread_condattr_t *attr);  // Inicializa o mutex condicional. "cond" é o ponteiro para o mutex condicional a ser inicializado e "attr" são os atributos do mutex condicional (NULL para atributos padrão).
@@ -428,7 +428,7 @@ int main() {
 }
 ```
 
-#### Remover Mutex Condicional
+### Remover Mutex Condicional
 
 ```c
 int pthread_cond_destroy(pthread_cond_t *cond); // Destroi o mutex condicional. "cond" é o ponteiro para o mutex condicional a ser destruído
@@ -455,7 +455,7 @@ int main() {
 
 ### **Semáforos Não Nomeados (Unnamed Semaphores)**
 
-#### Criar e dar Attach em Semáforos Não Nomeados
+### Criar e dar Attach em Semáforos Não Nomeados
 
 ```c
 int sem_init(sem_t *sem, int pshared, unsigned int value); // Inicia o semáforo não nomeado. "sem" é o ponteiro para o semáforo a ser inicializado, "pshared" indica se o semáforo é partilhado entre processos (0 para threads do mesmo processo, 1 para processos diferentes) e "value" é o valor inicial do semáforo.
@@ -504,7 +504,7 @@ int main() {
 }
 ```
 
-#### Remover e/ou dar Detach Semáforos Não Nomeados
+### Remover e/ou dar Detach Semáforos Não Nomeados
 
 ```c
 int sem_destroy(sem_t *sem); // "sem" é o ponteiro para o semáforo a ser destruído
@@ -523,7 +523,7 @@ int main() {
 
 ### **Semáforos Nomeados (Named Semaphores)**
 
-#### Criar e dar Attach Semáforos Nomeados
+### Criar e dar Attach Semáforos Nomeados
 
 ```c
 sem_t *sem_open(const char *name, int oflag, mode_t mode, unsigned int value); // Cria o semáforo nomeado. "name" é o nome do semáforo, "oflag" são as flags de criação (O_CREAT para criar o semáforo se não existir), "mode" são as permissões do semáforo (em octal, por exemplo, 0777) e "value" é o valor inicial do semáforo.
@@ -534,10 +534,45 @@ int sem_post(sem_t *sem); // Imcrementa o semáforo. "sem" é o ponteiro para o 
 Exemplo:
 
 ```c
+#include <stdio.h> // Importar stdio.h para os printfs e perrors
+#include <errno.h> // Importar errono.h para os perrors
+#include <pthread.h> // Importar pthread.h para a criação de threads
 
+#define NUMERO_DE_THREADS 10
+
+sem_t semaforo; // Declarar globalmente uma variável para guardar o ponteiro para o semáforo
+pthread_t lista_de_threads[NUMERO_DE_THREADS];
+
+void* tarefa() {
+    for (int tarefa = 0; tarefa < 3; tarefa++) {
+    sem_wait(&semaforo); // Decrementa o semáforo
+    sleep(10);
+    sem_post(&semaforo); // Incrementa o semáforo
+    }
+
+    return NULL;
+}
+
+int main() {
+    if ((semaforo_nomeado = sem_open("GUSTAVO", O_CREAT, 0777, 5)) == -1) /*Inicia um semáforo com "5 espaços". Verifica também se existiu algum erro na criação do semáforo*/ {
+        perror("Erro a iniciar o semáforo!");
+    }
+
+    for (int thread = 0; thread < NUMERO_DE_THREADS; thread++) {
+        if ((pthread_create(&lista_de_threads[thread], NULL, tarefa, NULL)) == -1) {
+            perror("Error ao criar uma thread!");
+        }
+    }
+
+    for (int thread = 0; thread < NUMERO_DE_THREADS; thread++) {
+        pthread_join(&lista_de_threads[thread], NULL);
+    }
+
+    (...)
+}
 ```
 
-#### Remover e/ou dar Detach Semáforos Nomeados
+### Remover e/ou dar Detach Semáforos Nomeados
 
 ```c
 int sem_close(sem_t *sem); // Sai do semáforo nomeado. "sem" é o ponteiro para o semáforo retornado pela função sem_open
@@ -547,7 +582,13 @@ int sem_unlink(const char *name); // Apaga o semáforo nomeado do sistema. "name
 Exemplo:
 
 ```c
+int main() {
+    (...)
 
+    sem_close(&semaforo);
+    sem_unlink("GUSTAVO");
+    return 0;
+}
 ```
 
 ## **Memória Partilhada (Shared Memory)**
@@ -613,7 +654,7 @@ int main(){
 sighandler_t signal(int signum, sighandler_t handler); // Cria um signal handler. "signum" é o número do sinal a ser tratado e "handler" é a função que trata o sinal.
 ```
 
-#### Tratar de todos os sinais numa função
+### Tratar de todos os sinais numa função
 
 Exemplo:
 
@@ -643,7 +684,7 @@ int main(){
 }
 ```
 
-#### Tratar dos sinais em funções distintas
+### Tratar dos sinais em funções distintas
 
 Exemplo:
 
@@ -716,7 +757,7 @@ int main() {
 
 ### Enviar Sinais
 
-#### Para Processos
+### Para Processos
 
 ```c
 int kill(pid_t pid, int sig); // Enviar sinal "sig" para o processo com PID "pid".
@@ -732,7 +773,7 @@ int main() {
 }
 ```
 
-#### Para Threads
+### Para Threads
 
 ```c
 int pthread_kill(pthread_t thread, int sig); // Enviar sinal "sig" para a thread com ID "thread".
@@ -758,6 +799,122 @@ int main() {
 
     return 0;
 }
+```
+
+## **Pipes**
+
+```c
+```
+
+### **Pipes sem Nome (Unnamed Pipes)**
+
+### Criar e dar Attach em Pipes sem Nome
+
+```c
+```
+
+Exemplo:
+
+```c
+```
+
+### Remover e/ou dar Attach em Pipes sem Nome
+
+```c
+```
+
+Exemplo:
+
+```c
+```
+
+### **Pipes com Nome (Named Pipes)**
+
+### Criar e dar Attach em Pipes com Nome
+
+```c
+```
+
+Exemplo:
+
+```c
+```
+
+### Remover e/ou dar Dettach em Pipes com Nome
+
+Exemplo:
+
+```c
+```
+
+## **Filas de Mensagens (Message Queues)**
+
+```c
+```
+
+### Criar e dar Attach em Filas de Mensagens
+
+```c
+```
+
+Exemplo:
+
+```c
+```
+
+### Enviar Mensagens
+
+```c
+```
+
+Exemplo:
+
+```c
+```
+
+### Ler Mensagens
+
+```c
+```
+
+Exemplo:
+
+```c
+```
+
+### Remover e/ou dar Detach em Filas de Mensagens
+
+```c
+```
+
+Exemplo:
+
+```c
+```
+
+## **Ficheiros Mapeados na Memória (Memory Mapped Files)**
+
+```c
+```
+
+### Criar e dar Attach em Memory Mapped Files
+
+```c
+```
+
+Exemplo:
+
+```c
+```
+
+### Remover e/ou dar Detach em Memory Mapped Files
+
+```c
+```
+
+Exemplo:
+
+```c
 ```
 
 ## **TABELA DE RESUMO**
