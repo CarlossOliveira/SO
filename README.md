@@ -144,9 +144,9 @@ Não existe nenhum comando para remover explicitamente threads dado que uma thre
 
 ### **Mutex Exclusivo**
 
-### Criar e Iniciar Mutex Exclusivo
+#### Criar e Iniciar Mutex Exclusivo
 
-### Criação Estática
+##### Criação Estática
 
 ```c
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER; // Cria uma variável global para guardar o mutex e inicia o mutex de forma estática e predefinida
@@ -194,7 +194,7 @@ int main() {
 }
 ```
 
-### Criação Dinâmica
+##### Criação Dinâmica
 
 ```c
 int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr); // Inicializa o mutex exclusivo. "mutex" é o ponteiro para o mutex a ser inicializado e "attr" são os atributos do mutex (NULL para atributos padrão).
@@ -244,7 +244,7 @@ int main() {
 }
 ```
 
-### Remover Mutex Exclusivo
+#### Remover Mutex Exclusivo
 
 ```c
 int pthread_mutex_destroy(pthread_mutex_t *mutex); // Destroi o mutex exclusivo. "mutex" é o ponteiro para o mutex a ser destruído
@@ -264,9 +264,9 @@ int main() {
 
 ### **Mutex Condicional**
 
-### Criar e Iniciar Mutex Condicional
+#### Criar e Iniciar Mutex Condicional
 
-### Criação Estática
+##### Criação Estática
 
 ```c
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER; // Cria uma variável global para guardar o mutex condicional e inicia o mutex condicional de forma estática e predefinida
@@ -344,7 +344,7 @@ int main() {
 }
 ```
 
-### Criação Dinâmica
+##### Criação Dinâmica
 
 ```c
 int pthread_cond_init(pthread_cond_t *cond, const pthread_condattr_t *attr);  // Inicializa o mutex condicional. "cond" é o ponteiro para o mutex condicional a ser inicializado e "attr" são os atributos do mutex condicional (NULL para atributos padrão).
@@ -428,7 +428,7 @@ int main() {
 }
 ```
 
-### Remover Mutex Condicional
+#### Remover Mutex Condicional
 
 ```c
 int pthread_cond_destroy(pthread_cond_t *cond); // Destroi o mutex condicional. "cond" é o ponteiro para o mutex condicional a ser destruído
@@ -455,7 +455,7 @@ int main() {
 
 ### **Semáforos Não Nomeados (Unnamed Semaphores)**
 
-### Criar e dar Attach em Semáforos Não Nomeados
+#### Criar e dar Attach em Semáforos Não Nomeados
 
 ```c
 int sem_init(sem_t *sem, int pshared, unsigned int value); // Inicia o semáforo não nomeado. "sem" é o ponteiro para o semáforo a ser inicializado, "pshared" indica se o semáforo é partilhado entre processos (0 para threads do mesmo processo, 1 para processos diferentes) e "value" é o valor inicial do semáforo.
@@ -504,7 +504,7 @@ int main() {
 }
 ```
 
-### Remover e/ou dar Detach Semáforos Não Nomeados
+#### Remover e/ou dar Detach Semáforos Não Nomeados
 
 ```c
 int sem_destroy(sem_t *sem); // "sem" é o ponteiro para o semáforo a ser destruído
@@ -523,7 +523,7 @@ int main() {
 
 ### **Semáforos Nomeados (Named Semaphores)**
 
-### Criar e dar Attach Semáforos Nomeados
+#### Criar e dar Attach Semáforos Nomeados
 
 ```c
 sem_t *sem_open(const char *name, int oflag, mode_t mode, unsigned int value); // Cria o semáforo nomeado. "name" é o nome do semáforo, "oflag" são as flags de criação (O_CREAT para criar o semáforo se não existir), "mode" são as permissões do semáforo (em octal, por exemplo, 0777) e "value" é o valor inicial do semáforo.
@@ -572,7 +572,7 @@ int main() {
 }
 ```
 
-### Remover e/ou dar Detach Semáforos Nomeados
+#### Remover e/ou dar Detach Semáforos Nomeados
 
 ```c
 int sem_close(sem_t *sem); // Sai do semáforo nomeado. "sem" é o ponteiro para o semáforo retornado pela função sem_open
@@ -654,7 +654,7 @@ int main(){
 sighandler_t signal(int signum, sighandler_t handler); // Cria um signal handler. "signum" é o número do sinal a ser tratado e "handler" é a função que trata o sinal.
 ```
 
-### Tratar de todos os sinais numa função
+#### Tratar de todos os sinais numa função
 
 Exemplo:
 
@@ -684,7 +684,7 @@ int main(){
 }
 ```
 
-### Tratar dos sinais em funções distintas
+#### Tratar dos sinais em funções distintas
 
 Exemplo:
 
@@ -757,7 +757,7 @@ int main() {
 
 ### Enviar Sinais
 
-### Para Processos
+#### Para Processos
 
 ```c
 int kill(pid_t pid, int sig); // Enviar sinal "sig" para o processo com PID "pid".
@@ -773,7 +773,7 @@ int main() {
 }
 ```
 
-### Para Threads
+#### Para Threads
 
 ```c
 int pthread_kill(pthread_t thread, int sig); // Enviar sinal "sig" para a thread com ID "thread".
@@ -808,7 +808,7 @@ int main() {
 
 ### **Pipes sem Nome (Unnamed Pipes)**
 
-### Criar e dar Attach em Pipes sem Nome
+#### Criar e dar Attach em Pipes sem Nome
 
 ```c
 ```
@@ -818,7 +818,7 @@ Exemplo:
 ```c
 ```
 
-### Remover e/ou dar Attach em Pipes sem Nome
+#### Remover e/ou dar Attach em Pipes sem Nome
 
 ```c
 ```
@@ -830,7 +830,7 @@ Exemplo:
 
 ### **Pipes com Nome (Named Pipes)**
 
-### Criar e dar Attach em Pipes com Nome
+#### Criar e dar Attach em Pipes com Nome
 
 ```c
 ```
@@ -840,7 +840,7 @@ Exemplo:
 ```c
 ```
 
-### Remover e/ou dar Dettach em Pipes com Nome
+#### Remover e/ou dar Dettach em Pipes com Nome
 
 Exemplo:
 
