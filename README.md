@@ -146,7 +146,7 @@ Não existe nenhum comando para remover explicitamente threads dado que uma thre
 
 #### Criar e Iniciar Mutex Exclusivo
 
-##### Criação Estática
+#### Criação Estática
 
 ```c
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER; // Cria uma variável global para guardar o mutex e inicia o mutex de forma estática e predefinida
@@ -194,7 +194,7 @@ int main() {
 }
 ```
 
-##### Criação Dinâmica
+#### Criação Dinâmica
 
 ```c
 int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr); // Inicializa o mutex exclusivo. "mutex" é o ponteiro para o mutex a ser inicializado e "attr" são os atributos do mutex (NULL para atributos padrão).
@@ -266,7 +266,7 @@ int main() {
 
 #### Criar e Iniciar Mutex Condicional
 
-##### Criação Estática
+#### Criação Estática
 
 ```c
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER; // Cria uma variável global para guardar o mutex condicional e inicia o mutex condicional de forma estática e predefinida
@@ -344,7 +344,7 @@ int main() {
 }
 ```
 
-##### Criação Dinâmica
+#### Criação Dinâmica
 
 ```c
 int pthread_cond_init(pthread_cond_t *cond, const pthread_condattr_t *attr);  // Inicializa o mutex condicional. "cond" é o ponteiro para o mutex condicional a ser inicializado e "attr" são os atributos do mutex condicional (NULL para atributos padrão).
