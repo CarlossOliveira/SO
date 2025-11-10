@@ -850,56 +850,172 @@ Exemplo:
 ## **Filas de Mensagens (Message Queues)**
 
 ```c
+typedef struct {
+    long priority;
+
+
+} message_t;
+
 ```
 
-### Criar e dar Attach em Filas de Mensagens
+### Criar uma Filas de Mensagens
 
 ```c
+int msgget(key_t key, int flags)
 ```
 
 Exemplo:
 
 ```c
+#include <stdio.h> // Importar stdio.h para os perrors
+#include <errno.h> // Importar errono.h para os perrors
+
+int main() {
+    int message_queue_id = msgget(2006, IPC_CREAT | 0777); // Cria uma fila de mensagens não persistente com as seguintes características: key = 2006 (normalmente tomado como IPC_PRIVATE), flag de criação = IPC_CREAT e flag de premissões = 777. Retorna um id usado para criar, remover e/ou aceder à fila de mensagens.
+    if  (message_queue_id == -1) /*Verifica se existiu algum erro na criação da fila de mensagens*/ {
+        perror("message queue creation error!");
+        exit(1);
+    }
+
+    (...)
+}
 ```
 
 ### Enviar Mensagens
 
 ```c
+int msgsnd(int msqid, const void* message, size_t length, int flags)
 ```
 
 Exemplo:
 
 ```c
+// Payload da mensagem
+typedef struct {
+    char message[1024];
+} payload_t;
+
+// Estrutura da mensagem (estrutura do pacote de envio, contém um valor de prioridade e o conteúdo)
+typedef struct {
+    long PRIORITY;
+    payload_t PAYLOAD;
+} message_t;
+
+int main() {
+    (...)
+
+    pid_t presidente, vice_presidente, secretario, Carlos; // PIDs dos processos filhos
+
+    // O processo presidente manda uma mensagem para a fila
+    if ((presidente = fork()) == 0) {
+        message_t message_from_president;
+
+        message_from_president.PRIORITY = 4;
+        message_from_president.PAYLOAD.message = "Manda uma nuke tática na lua.";
+
+        msgsnd(message_queue_id, &message_from_president, sizeof(message_from_president) - sizeof(long), 0); // Insere a mensagem na fila de mensagens associada ao id message_queue_id. my_message é do tipo message_t e 0 significa que não há flags de entrada de mensagem especial
+
+        exit(0);
+    }
+
+    // O processo vice_presidente manda uma mensagem para a fila
+        message_t message_from_vice_president;
+    if ((vice_presidente = fork()) == 0) {
+        message_from_vice_president.PRIORITY = 3;
+        message_from_vice_president.PAYLOAD.message = "Despede o presidente dos SMTUC.";
+
+        msgsnd(message_queue_id, &message_from_vice_president, sizeof(message_from_vice_president) - sizeof(long), 0);
+
+        exit(0);
+    }
+
+    // O processo secretario manda uma mensagem para a fila
+    if ((secretario = fork()) == 0) {
+        message_t message_from_secretario;
+
+        message_from_secretario.PRIORITY = 2;
+        message_from_secretario.PAYLOAD.message = "Já está feito ca**lho!";
+
+        msgsnd(message_queue_id, &message_from_secretario, sizeof(message_from_secretario) - sizeof(long), 0);
+
+        exit(0);
+    }
+
+    // O processo Carlos manda uma mensagem para a fila
+    if ((Carlos = fork()) == 0) {
+        message_t message_from_Carlos;
+
+        message_from_carlos.PRIORITY = 1;
+        message_from_carlos.PAYLOAD.message = "Manda vir um frango.";
+
+        msgsnd(message_queue_id, &message_from_carlos, sizeof(message_from_carlos) - sizeof(long), 0);
+
+        exit(0);
+    }
+
+    (...)
+}
 ```
 
 ### Ler Mensagens
 
 ```c
+int msgrcv(int msqid, void* message, size_t length, long msgtype, int flags)
 ```
 
 Exemplo:
 
 ```c
+int main() {
+    (...)
+
+    // Processo que lê todas as mensagens com prioridade igual a 4 (lê todas as mensagens vindas do presidente)
+    if (fork() == 0) {
+        msgrcv(message_queue_id, &message, sizeof(message) - sizeof(long), 0, 4);
+    }
+
+    // Processo que lê todas as mensagens com prioridade igual ou inferior a 3 (lê todas as mensagens vindas do vice_presidente, secretario e Carlos)
+    if (fork() == 0) {
+        msgrcv(message_queue_id, &message, sizeof(message) - sizeof(long), 0, -3);
+    }
+
+    // Processo que lê todas as mensagens
+    if (fork() == 0) {
+        msgrcv(message_queue_id, &message, sizeof(message) - sizeof(long), 0, 0); // Lê todas as mensagens enviadas para a fila de mensagens
+    }
+
+    (...)
+}
 ```
 
 ### Remover e/ou dar Detach em Filas de Mensagens
 
 ```c
+int msgctl(int msqid, int cmd, struct msqid_ds* buff)
 ```
 
 Exemplo:
 
 ```c
+int main() {
+    (...)
+
+    msgctl(message_queue_id, IPC_RMID, NULL); // Apaga a fila de mensagens associada ao id message_queue_id.
+
+    return 0;
+}
 ```
 
 ## **Ficheiros Mapeados na Memória (Memory Mapped Files)**
 
 ```c
+#include <sys/mman.h>
 ```
 
 ### Criar e dar Attach em Memory Mapped Files
 
 ```c
+void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset);
 ```
 
 Exemplo:
@@ -910,6 +1026,7 @@ Exemplo:
 ### Remover e/ou dar Detach em Memory Mapped Files
 
 ```c
+void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset);
 ```
 
 Exemplo:
