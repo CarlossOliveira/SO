@@ -864,7 +864,7 @@ int msgget(key_t key, int flags);
 Exemplo:
 
 ```c
-#include <stdio.h> // Importar stdio.h para os perrors
+#include <stdio.h> // Importar stdio.h para os printfs e perrors
 #include <errno.h> // Importar errono.h para os perrors
 
 int main() {
@@ -887,8 +887,6 @@ int msgsnd(int msqid, const void* message, size_t length, int flags);
 Exemplo:
 
 ```c
-#include <stdio.h> // Importar stdio.h para os printfs
-
 // Payload da mensagem
 typedef struct {
     char message[1024];
