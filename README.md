@@ -850,18 +850,14 @@ Exemplo:
 ## **Filas de Mensagens (Message Queues)**
 
 ```c
-typedef struct {
-    long priority;
-
-
-} message_t;
-
+#include <sys/msg.h>
+#include <sys/ipc.h> // Importar as flags IPC_CREAT, etc.
 ```
 
 ### Criar uma Filas de Mensagens
 
 ```c
-int msgget(key_t key, int flags)
+int msgget(key_t key, int flags);
 ```
 
 Exemplo:
@@ -884,7 +880,7 @@ int main() {
 ### Enviar Mensagens
 
 ```c
-int msgsnd(int msqid, const void* message, size_t length, int flags)
+int msgsnd(int msqid, const void* message, size_t length, int flags);
 ```
 
 Exemplo:
@@ -960,7 +956,7 @@ int main() {
 ### Ler Mensagens
 
 ```c
-int msgrcv(int msqid, void* message, size_t length, long msgtype, int flags)
+int msgrcv(int msqid, void* message, size_t length, long msgtype, int flags);
 ```
 
 Exemplo:
@@ -991,7 +987,7 @@ int main() {
 ### Remover e/ou dar Detach em Filas de Mensagens
 
 ```c
-int msgctl(int msqid, int cmd, struct msqid_ds* buff)
+int msgctl(int msqid, int cmd, struct msqid_ds* buff);
 ```
 
 Exemplo:
