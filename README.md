@@ -38,13 +38,13 @@
      - [Criar e dar Attach em Pipes com Nome](#criar-e-dar-attach-em-pipes-com-nome)
      - [Remover e/ou dar Attach em Pipes com Nome](#remover-eou-dar-dettach-em-pipes-com-nome)
 7. [**Filas de Mensagens (Message Queues)**](#filas-de-mensagens-message-queues)
-   - [Criar e dar Attach em Filas de Mensagens](#criar-e-dar-attach-em-filas-de-mensagens)
+   - [Criar e dar Attach em Filas de Mensagens](#criar-filas-de-mensagens)
    - [Enviar Mensagens](#enviar-mensagens)
    - [Ler Mensagens](#ler-mensagens)
-   - [Remover e/ou dar Detach em Filas de Mensagens](#remover-eou-dar-detach-em-filas-de-mensagens)
+   - [Remover e/ou dar Detach em Filas de Mensagens](#remover-filas-de-mensagens)
 8. [**Ficheiros Mapeados na Memória (Memory Mapped Files)**](#ficheiros-mapeados-na-memória-memory-mapped-files)
-   - [Criar e dar Attach em Memory Mapped Files](#criar-e-dar-attach-em-memory-mapped-files)
-   - [Remover e/ou dar Detach em Memory Mapped Files](#remover-eou-dar-detach-em-memory-mapped-files)
+   - [Criar e dar Attach em Memory Mapped Files](#criar-memory-mapped-files)
+   - [Remover e/ou dar Detach em Memory Mapped Files](#remover-memory-mapped-files)
 9. [**Tabela de Resumo**](#tabela-de-resumo)
 
 ## Processos Filhos (Child Processes with Fork)
@@ -595,6 +595,7 @@ int main() {
 
 ```c
 #include <sys/shm.h>
+#include <sys/ipc.h> // Importar as flags IPC_CREAT, etc.
 ```
 
 ### Criar e dar Attach em blocos de Memória Partilhada
@@ -854,7 +855,7 @@ Exemplo:
 #include <sys/ipc.h> // Importar as flags IPC_CREAT, etc.
 ```
 
-### Criar uma Filas de Mensagens
+### Criar Filas de Mensagens
 
 ```c
 int msgget(key_t key, int flags);
@@ -984,7 +985,7 @@ int main() {
 }
 ```
 
-### Remover e/ou dar Detach em Filas de Mensagens
+### Remover Filas de Mensagens
 
 ```c
 int msgctl(int msqid, int cmd, struct msqid_ds* buff);
@@ -1008,7 +1009,7 @@ int main() {
 #include <sys/mman.h>
 ```
 
-### Criar e dar Attach em Memory Mapped Files
+### Criar Memory Mapped Files
 
 ```c
 void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset);
@@ -1019,7 +1020,7 @@ Exemplo:
 ```c
 ```
 
-### Remover e/ou dar Detach em Memory Mapped Files
+### Remover Memory Mapped Files
 
 ```c
 void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset);
