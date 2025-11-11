@@ -887,6 +887,8 @@ int msgsnd(int msqid, const void* message, size_t length, int flags);
 Exemplo:
 
 ```c
+#include <stdio.h> // Importar stdio.h para os printfs
+
 // Payload da mensagem
 typedef struct {
     char message[1024];
@@ -912,6 +914,8 @@ int main() {
 
         msgsnd(message_queue_id, &message_from_president, sizeof(message_from_president) - sizeof(long), 0); // Insere a mensagem na fila de mensagens associada ao id message_queue_id. my_message é do tipo message_t e 0 significa que não há flags de entrada de mensagem especial
 
+        printf("Mensagem enviada com sucesso!");
+
         exit(0);
     }
 
@@ -922,6 +926,8 @@ int main() {
         message_from_vice_president.PAYLOAD.message = "Despede o presidente dos SMTUC.";
 
         msgsnd(message_queue_id, &message_from_vice_president, sizeof(message_from_vice_president) - sizeof(long), 0);
+
+        printf("Mensagem enviada com sucesso!");
 
         exit(0);
     }
@@ -935,6 +941,8 @@ int main() {
 
         msgsnd(message_queue_id, &message_from_secretario, sizeof(message_from_secretario) - sizeof(long), 0);
 
+        printf("Mensagem enviada com sucesso!");
+
         exit(0);
     }
 
@@ -946,6 +954,8 @@ int main() {
         message_from_carlos.PAYLOAD.message = "Manda vir um frango.";
 
         msgsnd(message_queue_id, &message_from_carlos, sizeof(message_from_carlos) - sizeof(long), 0);
+
+        printf("Mensagem enviada com sucesso!");
 
         exit(0);
     }
@@ -963,22 +973,47 @@ int msgrcv(int msqid, void* message, size_t length, long msgtype, int flags);
 Exemplo:
 
 ```c
+#include <unistd.h> // Include para os sleeps
+
 int main() {
     (...)
 
+    message_t received_message; // Estrutura para guardar a mensagem recebida
+
     // Processo que lê todas as mensagens com prioridade igual a 4 (lê todas as mensagens vindas do presidente)
     if (fork() == 0) {
-        msgrcv(message_queue_id, &message, sizeof(message) - sizeof(long), 0, 4);
+        msgrcv(message_queue_id, &received_message, sizeof(received_message) - sizeof(long), 0, 4);
+        
+        printf("MENSAGEM RECEBIDA DO PRESIDENTE, PRIORIDADE %ll : %s", received_message.PRIORITY, received_message.PAYLOAD.message);
+
+        sleep(10);
+        exit(0);
     }
 
     // Processo que lê todas as mensagens com prioridade igual ou inferior a 3 (lê todas as mensagens vindas do vice_presidente, secretario e Carlos)
     if (fork() == 0) {
-        msgrcv(message_queue_id, &message, sizeof(message) - sizeof(long), 0, -3);
+        msgrcv(message_queue_id, &received_message, sizeof(received_message) - sizeof(long), 0, -3);
+
+        if (received_message.PRIORITY == 3) {
+            printf("MENSAGEM RECEBIDA DO VICE-PRESIDENTE, PRIORIDADE %ll : %s", received_message.PRIORITY, received_message.PAYLOAD.message);
+        } else if (received_message.PRIORITY == 2) {
+            printf("MENSAGEM RECEBIDA DO SECRETARIO, PRIORIDADE %ll : %s", received_message.PRIORITY, received_message.PAYLOAD.message);
+        } else if (received_message.PRIORITY == 1) {
+            printf("MENSAGEM RECEBIDA DO CARLOS, PRIORIDADE %ll : %s", received_message.PRIORITY, received_message.PAYLOAD.message);
+        }
+
+        sleep(10);
+        exit(0);
     }
 
     // Processo que lê todas as mensagens
     if (fork() == 0) {
-        msgrcv(message_queue_id, &message, sizeof(message) - sizeof(long), 0, 0); // Lê todas as mensagens enviadas para a fila de mensagens
+        msgrcv(message_queue_id, &received_message, sizeof(received_message) - sizeof(long), 0, 0); // Lê todas as mensagens enviadas para a fila de mensagens
+
+        printf("MENSAGEM RECEBIDA PRIORIDADE %ll : %s", received_message.PRIORITY, received_message.PAYLOAD.message);
+
+        sleep(10);
+        exit(0);
     }
 
     (...)
