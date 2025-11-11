@@ -852,13 +852,13 @@ Exemplo:
 
 ```c
 #include <sys/msg.h>
-#include <sys/ipc.h> // Importar as flags IPC_CREAT, etc.
+#include <sys/ipc.h> // Importar as flags IPC_CREAT, IPC_RMID,...
 ```
 
 ### Criar Filas de Mensagens
 
 ```c
-int msgget(key_t key, int flags);
+int msgget(key_t key, int flags); // Cria uma fila de mensagens não persistente (durante a execução do programa) com chave única "key" e flags de criação "flags" (IPC_CREAT para criar a fila se não existir e as permissões em octal, por exemplo, 0777). Retorna um id usado para criar, remover e/ou aceder à fila de mensagens.
 ```
 
 Exemplo:
@@ -868,7 +868,7 @@ Exemplo:
 #include <errno.h> // Importar errono.h para os perrors
 
 int main() {
-    int message_queue_id = msgget(2006, IPC_CREAT | 0777); // Cria uma fila de mensagens não persistente com as seguintes características: key = 2006 (normalmente tomado como IPC_PRIVATE), flag de criação = IPC_CREAT e flag de premissões = 777. Retorna um id usado para criar, remover e/ou aceder à fila de mensagens.
+    int message_queue_id = msgget(2006, IPC_CREAT | 0777);
     if  (message_queue_id == -1) /*Verifica se existiu algum erro na criação da fila de mensagens*/ {
         perror("message queue creation error!");
         exit(1);
@@ -881,7 +881,7 @@ int main() {
 ### Enviar Mensagens
 
 ```c
-int msgsnd(int msqid, const void* message, size_t length, int flags);
+int msgsnd(int msqid, const void* message, size_t length, int flags); // Envia a mensagem "message" para a fila de mensagens com id "msqid". "length" é o tamanho da mensagem a enviar e "flags" são as flags de envio.
 ```
 
 Exemplo:
@@ -918,7 +918,7 @@ int main() {
     }
 
     // O processo vice_presidente manda uma mensagem para a fila
-        message_t message_from_vice_president;
+    message_t message_from_vice_president;
     if ((vice_presidente = fork()) == 0) {
         message_from_vice_president.PRIORITY = 3;
         message_from_vice_president.PAYLOAD.message = "Despede o presidente dos SMTUC.";
@@ -965,7 +965,7 @@ int main() {
 ### Ler Mensagens
 
 ```c
-int msgrcv(int msqid, void* message, size_t length, long msgtype, int flags);
+int msgrcv(int msqid, void* message, size_t length, long msgtype, int flags); // Lê a mensagem da fila de mensagens com id "msqid" e guarda-a na estrutura "message". "length" é o tamanho da mensagem a ler e "msgtype" é o tipo de mensagem (o long da estrutura de dados da mensagem, message_t) a ler.
 ```
 
 Exemplo:
@@ -980,9 +980,12 @@ int main() {
 
     // Processo que lê todas as mensagens com prioridade igual a 4 (lê todas as mensagens vindas do presidente)
     if (fork() == 0) {
-        msgrcv(message_queue_id, &received_message, sizeof(received_message) - sizeof(long), 0, 4);
+        msgrcv(message_queue_id, &received_message, sizeof(received_message) - sizeof(long), 4, 0) {
+            perror("Error receiving message!");
+            exit(1);
+        }
         
-        printf("MENSAGEM RECEBIDA DO PRESIDENTE, PRIORIDADE %ll : %s", received_message.PRIORITY, received_message.PAYLOAD.message);
+        printf("MENSAGEM RECEBIDA DO PRESIDENTE, PRIORIDADE %ld : %s", received_message.PRIORITY, received_message.PAYLOAD.message);
 
         sleep(10);
         exit(0);
@@ -990,14 +993,17 @@ int main() {
 
     // Processo que lê todas as mensagens com prioridade igual ou inferior a 3 (lê todas as mensagens vindas do vice_presidente, secretario e Carlos)
     if (fork() == 0) {
-        msgrcv(message_queue_id, &received_message, sizeof(received_message) - sizeof(long), 0, -3);
+        if (msgrcv(message_queue_id, &received_message, sizeof(received_message) - sizeof(long), -3, 0) == -1) {
+            perror("Error receiving message!");
+            exit(1);
+        }
 
         if (received_message.PRIORITY == 3) {
-            printf("MENSAGEM RECEBIDA DO VICE-PRESIDENTE, PRIORIDADE %ll : %s", received_message.PRIORITY, received_message.PAYLOAD.message);
+            printf("MENSAGEM RECEBIDA DO VICE-PRESIDENTE, PRIORIDADE %ld : %s", received_message.PRIORITY, received_message.PAYLOAD.message);
         } else if (received_message.PRIORITY == 2) {
-            printf("MENSAGEM RECEBIDA DO SECRETARIO, PRIORIDADE %ll : %s", received_message.PRIORITY, received_message.PAYLOAD.message);
+            printf("MENSAGEM RECEBIDA DO SECRETARIO, PRIORIDADE %ld : %s", received_message.PRIORITY, received_message.PAYLOAD.message);
         } else if (received_message.PRIORITY == 1) {
-            printf("MENSAGEM RECEBIDA DO CARLOS, PRIORIDADE %ll : %s", received_message.PRIORITY, received_message.PAYLOAD.message);
+            printf("MENSAGEM RECEBIDA DO CARLOS, PRIORIDADE %ld : %s", received_message.PRIORITY, received_message.PAYLOAD.message);
         }
 
         sleep(10);
@@ -1006,9 +1012,12 @@ int main() {
 
     // Processo que lê todas as mensagens
     if (fork() == 0) {
-        msgrcv(message_queue_id, &received_message, sizeof(received_message) - sizeof(long), 0, 0); // Lê todas as mensagens enviadas para a fila de mensagens
+        if (msgrcv(message_queue_id, &received_message, sizeof(received_message) - sizeof(long), 0, 0) == -1) /* Lê todas as mensagens enviadas para a fila de mensagens */ {
+            perror("Error receiving message!");
+            exit(1);
+        }
 
-        printf("MENSAGEM RECEBIDA PRIORIDADE %ll : %s", received_message.PRIORITY, received_message.PAYLOAD.message);
+        printf("MENSAGEM RECEBIDA PRIORIDADE %ld : %s", received_message.PRIORITY, received_message.PAYLOAD.message);
 
         sleep(10);
         exit(0);
@@ -1021,7 +1030,7 @@ int main() {
 ### Remover Filas de Mensagens
 
 ```c
-int msgctl(int msqid, int cmd, struct msqid_ds* buff);
+int msgctl(int msqid, int cmd, struct msqid_ds* buff); // Remove a fila de mensagens com id "msqid". "cmd" é a operação a realizar (IPC_RMID para remover a fila) e "buff" é um ponteiro para uma estrutura de dados usada para obter ou definir informações sobre a fila de mensagens (normalmente não é utilizado então atribui-se NULL).
 ```
 
 Exemplo:
@@ -1051,6 +1060,9 @@ void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset)
 Exemplo:
 
 ```c
+int main() {
+
+}
 ```
 
 ### Remover Memory Mapped Files
