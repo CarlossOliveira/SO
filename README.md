@@ -880,7 +880,7 @@ int main() {
 
 ```c
 int pipe(int fd_array[2]); // Cria um pipe sem nome, retornando dois file descriptors em fd_array. fd_array[0] é para leitura, fd_array[1] é para escrita. Retorna 0 em caso de sucesso e -1 em caso de erro.
-int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout); // Monitora múltiplos file descriptors. "nfds" é o valor do maior file descriptor + 1 (+1 porque é ), "readfds" são os FDs a monitorar para leitura, "writefds" para escrita, "exceptfds" para exceções, "timeout" é o tempo máximo de espera (NULL para bloqueio indefinido). Retorna o número de FDs prontos, 0 se ocorrer timeout, e -1 em caso de erro.
+int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout); // Monitora múltiplos file descriptors. "nfds" é o número do maior file descriptor + 1 (+1 porque o parâmetro é exclusivo), "readfds" são os FDs a monitorar para leitura, "writefds" para escrita, "exceptfds" para exceções, "timeout" é o tempo máximo de espera (NULL para bloqueio indefinido). Retorna o número de FDs prontos, 0 se ocorrer timeout, e -1 em caso de erro.
 void FD_ZERO(fd_set *set); // Inicializa um fd_set, limpando todos os bits. Usado antes de adicionar FDs com FD_SET. Não retorna valor.
 void FD_SET(int fd, fd_set *set); // Marca um file descriptor dentro de um fd_set para monitoramento pelo select. "fd" é o file descriptor a adicionar, set é o fd_set a atualizar. Não retorna valor.
 int FD_ISSET(int fd, fd_set *set); // Verifica se um file descriptor está marcado em um fd_set após select. Retorna um valor diferente de 0 se o FD está pronto, 0 caso contrário.
@@ -1039,7 +1039,9 @@ ssize_t write(int fd, const void *buf, size_t count); // Escreve até "count" by
 Exemplo:
 
 ```c
+int main(int numero_de_argumentos, char *argumentos[]) {
 
+}
 ```
 
 ### Remover e/ou dar detach em Pipes com Nome
@@ -1280,9 +1282,7 @@ void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset)
 Exemplo:
 
 ```c
-int main() {
 
-}
 ```
 
 ## Remover Memory Mapped Files
