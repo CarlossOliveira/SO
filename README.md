@@ -2,27 +2,29 @@
 
 ## Índice
 
-1. [**Processos Filho(Child Processes with Fork)**](#processos-filho-child-processes-with-fork)
+## Índice
+
+1. [**Processos Filho (Child Processes with Fork)**](#processos-filho-child-processes-with-fork)
    - [Criar Processos Filhos](#criar-processos-filhos-dar-fork-do-processo-pai)
    - [Remover Processos Filhos](#remover-processos-filhos)
 2. [**Threads (Tasks)**](#threads-tasks)
    - [Spawnar Threads](#spawnar-threads)
    - [Remover Threads](#remover-threads)
-   - [**Mutex **](#mutex-)
-     - [Criar e Iniciar Mutex ](#criar-e-iniciar-mutex-)
-     - [Remover Mutex ](#remover-mutex-)
-   - [**Mutex com Condição**](#mutex-condicional)
-     - [Criar e Iniciar Mutex com Condição](#criar-e-iniciar-mutex-condicional)
-     - [Remover Mutex com Condição](#remover-mutex-condicional)
+   - [**Mutex**](#mutex)
+     - [Criar e Iniciar Mutex](#criar-e-iniciar-mutex)
+     - [Remover Mutex](#remover-mutex)
+   - [**Mutex com Condição**](#mutex-com-condição)
+     - [Criar e Iniciar Mutex com Condição](#criar-e-iniciar-mutex-com-condição)
+     - [Remover Mutex com Condição](#remover-mutex-com-condição)
 3. [**Semáforos (Semaphores)**](#semáforos-semaphores)
    - [**Semáforos Não Nomeados (Unnamed Semaphores)**](#semáforos-não-nomeados-unnamed-semaphores)
-     - [Criar e dar Attach em Semáforos Não Nomeados](#criar-e-dar-attach-em-semáforos-não-nomeados)
-     - [Remover e/ou dar Detach Semáforos Não Nomeados](#remover-eou-dar-detach-semáforos-não-nomeados)
+     - [Criar e dar attach em Semáforos Não Nomeados](#criar-e-dar-attach-em-semáforos-não-nomeados)
+     - [Remover e/ou dar detach Semáforos Não Nomeados](#remover-eou-dar-detach-semáforos-não-nomeados)
    - [**Semáforos Nomeados (Named Semaphores)**](#semáforos-nomeados-named-semaphores)
-     - [Criar e dar Attach Semáforos Nomeados](#criar-e-dar-attach-semáforos-nomeados)
-     - [Remover e/ou dar Detach Semáforos Nomeados](#remover-eou-dar-detach-semáforos-nomeados)
+     - [Criar e dar attach Semáforos Nomeados](#criar-e-dar-attach-semáforos-nomeados)
+     - [Remover e/ou dar detach Semáforos Nomeados](#remover-eou-dar-detach-semáforos-nomeados)
 4. [**Memória Partilhada (Shared Memory)**](#memória-partilhada-shared-memory)
-     - [Criar e dar Attach em blocos de Memória Partilhada](#criar-e-dar-attach-em-blocos-de-memória-partilhada)
+     - [Criar e dar attach em blocos de Memória Partilhada](#criar-e-dar-attach-em-blocos-de-memória-partilhada)
      - [Apagar e/ou sair de um bloco de Memória Partilhada](#apagar-eou-sair-de-um-bloco-de-memória-partilhada)
 5. [**Sinais (Signals)**](#sinais-signals)
      - [Criar Signal Handlers](#criar-signal-handlers)
@@ -32,19 +34,19 @@
        - [Enviar Sinais para Threads](#para-threads)
 6. [**Pipes**](#pipes)
    - [**Pipes sem Nome (Unnamed Pipes)**](#pipes-sem-nome-unnamed-pipes)
-     - [Criar e dar Attach em Pipes sem Nome](#criar-e-dar-attach-em-pipes-sem- nome)
-     - [Remover e/ou dar Attach em Pipes sem Nome](#remover-pipes-sem-nome)
+     - [Criar e dar attach em Pipes sem Nome](#criar-e-dar-attach-em-pipes-sem-nome)
+     - [Remover e/ou dar detach em Pipes sem Nome](#remover-pipes-sem-nome)
    - [**Pipes com Nome (Named Pipes)**](#pipes-com-nome-named-pipes)
-     - [Criar e dar Attach em Pipes com Nome](#criar-e-dar-attach-em-pipes-com-nome)
-     - [Remover e/ou dar Attach em Pipes com Nome](#remover-eou-dar-dettach-em-pipes-com-nome)
+     - [Criar e dar attach em Pipes com Nome](#criar-e-dar-attach-em-pipes-com-nome)
+     - [Remover e/ou dar detach em Pipes com Nome](#remover-eou-dar-detach-em-pipes-com-nome)
 7. [**Filas de Mensagens (Message Queues)**](#filas-de-mensagens-message-queues)
-   - [Criar e dar Attach em Filas de Mensagens](#criar-filas-de-mensagens)
+   - [Criar e dar attach em Filas de Mensagens](#criar-filas-de-mensagens)
    - [Enviar Mensagens](#enviar-mensagens)
    - [Ler Mensagens](#ler-mensagens)
-   - [Remover e/ou dar Detach em Filas de Mensagens](#remover-filas-de-mensagens)
+   - [Remover e/ou dar detach em Filas de Mensagens](#remover-filas-de-mensagens)
 8. [**Ficheiros Mapeados na Memória (Memory Mapped Files)**](#ficheiros-mapeados-na-memória-memory-mapped-files)
-   - [Criar e dar Attach em Memory Mapped Files](#criar-memory-mapped-files)
-   - [Remover e/ou dar Detach em Memory Mapped Files](#remover-memory-mapped-files)
+   - [Criar e dar attach em Memory Mapped Files](#criar-memory-mapped-files)
+   - [Remover e/ou dar detach em Memory Mapped Files](#remover-memory-mapped-files)
 9. [**Tabela de Resumo**](#tabela-de-resumo)
 
 ---
@@ -111,8 +113,8 @@ int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_
 Exemplo:
 
 ```c
-#include <stdio.h> // Importar stdio.h para os perrors
-#include <errno.h> // Importar errno.h para os perrors
+#include <stdio.h> // Importar stdio.h para usar perror
+#include <errno.h> // Importar errno.h para usar perror
 
 #define NUMERO_DE_THREADS 5
 
@@ -170,8 +172,8 @@ pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER; // Cria uma variável global 
 Exemplo:
 
 ```c
-#include <stdio.h> // Importar stdio.h para os perrors
-#include <errno.h> // Importar errno.h para os perrors
+#include <stdio.h> // Importar stdio.h para usar perror
+#include <errno.h> // Importar errno.h para usar perror
 
 #define NUMERO_DE_THREADS 5
 
@@ -219,8 +221,8 @@ int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr);
 Exemplo:
 
 ```c
-#include <stdio.h> // Importar stdio.h para os perrors
-#include <errno.h> // Importar errno.h para os perrors
+#include <stdio.h> // Importar stdio.h para usar perror
+#include <errno.h> // Importar errno.h para usar perror
 
 #define NUMERO_DE_THREADS 5
 
@@ -299,8 +301,8 @@ pthread_cond_t cond = PTHREAD_COND_INITIALIZER; // Cria uma variável global par
 Exemplo:
 
 ```c
-#include <stdio.h> // Importar stdio.h para os perrors
-#include <errno.h> // Importar errno.h para os perrors
+#include <stdio.h> // Importar stdio.h para usar perror
+#include <errno.h> // Importar errno.h para usar perror
 
 #define NUMERO_DE_THREADS_PRODUTORAS 5
 #define NUMERO_DE_THREADS_CONSUMIDORAS 1
@@ -382,8 +384,8 @@ int pthread_cond_init(pthread_cond_t *cond, const pthread_condattr_t *attr); // 
 Exemplo:
 
 ```c
-#include <stdio.h> // Importar stdio.h para os perrors
-#include <errno.h> // Importar errno.h para os perrors
+#include <stdio.h> // Importar stdio.h para usar perror
+#include <errno.h> // Importar errno.h para usar perror
 
 #define NUMERO_DE_THREADS_PRODUTORAS 5
 #define NUMERO_DE_THREADS_CONSUMIDORAS 3
@@ -394,7 +396,7 @@ pthread_t lista_de_threads_consumidoras[NUMERO_DE_THREADS_CONSUMIDORAS];
 pthread_mutex_t mutex; // Cria uma variável global para guardar o mutex
 pthread_cond_t cond; // Cria uma variável global para guardar a condição a ser sinalizada 
 
-void* produtor(void* argumento) /* Incrementa um contador até 100, uma vez chegando a 100 termina e sinaliza a condição */ {
+void* produtor(void* argumento) {
     if (argumento != NULL) {
         int *contador = (int*)argumento; 
 
@@ -491,7 +493,7 @@ int main() {
 
 ## **Semáforos Não Nomeados (Unnamed Semaphores)**
 
-### Criar e dar Attach em Semáforos Não Nomeados
+### Criar e dar attach em Semáforos Não Nomeados
 
 ```c
 int sem_init(sem_t *sem, int pshared, unsigned int value); // Inicia o semáforo não nomeado. "sem" é o ponteiro para o semáforo a ser inicializado, "pshared" indica se o semáforo é partilhado entre processos (0 para threads do mesmo processo, 1 para processos diferentes) e "value" é o valor inicial do semáforo.
@@ -504,8 +506,8 @@ int sem_trywait(sem_t *sem); // // Decrementa o semáforo se ele não estiver a 
 Exemplo:
 
 ```c
-#include <stdio.h> // Importar stdio.h para os printfs e perrors
-#include <errno.h> // Importar errno.h para os perrors
+#include <stdio.h> // Importar stdio.h para usar printf e perror
+#include <errno.h> // Importar errno.h para usar perror
 #include <pthread.h> // Importar pthread.h para a criação de threads
 
 #define NUMERO_DE_THREADS 10
@@ -542,7 +544,7 @@ int main() {
 }
 ```
 
-### Remover e/ou dar Detach Semáforos Não Nomeados
+### Remover e/ou dar detach Semáforos Não Nomeados
 
 ```c
 int sem_destroy(sem_t *sem); // "sem" é o ponteiro para o semáforo a ser destruído
@@ -562,7 +564,7 @@ int main() {
 
 ## **Semáforos Nomeados (Named Semaphores)**
 
-### Criar e dar Attach Semáforos Nomeados
+### Criar e dar attach Semáforos Nomeados
 
 ```c
 sem_t *sem_open(const char *name, int oflag, mode_t mode, unsigned int value); // Cria o semáforo nomeado. "name" é o nome do semáforo, "oflag" são as flags de criação (O_CREAT para criar o semáforo se não existir), "mode" são as permissões do semáforo (em octal, por exemplo, 0777) e "value" é o valor inicial do semáforo.
@@ -573,8 +575,9 @@ int sem_post(sem_t *sem); // Incrementa o semáforo. "sem" é o ponteiro para o 
 Exemplo:
 
 ```c
-#include <stdio.h> // Importar stdio.h para os printfs e perrors
-#include <errno.h> // Importar errno.h para os perrors
+#include <fcntl.h> // Importar fcntl.h para a flag O_CREAT
+#include <stdio.h> // Importar stdio.h para usar printf e perror
+#include <errno.h> // Importar errno.h para usar perror
 #include <pthread.h> // Importar pthread.h para a criação de threads
 
 #define NUMERO_DE_THREADS 10
@@ -582,7 +585,7 @@ Exemplo:
 sem_t* semaforo_nomeado; // Declarar globalmente uma variável para guardar o ponteiro para o semáforo
 pthread_t lista_de_threads[NUMERO_DE_THREADS];
 
-void* tarefa() {
+void* tarefa(void* argumentos) {
     for (int tarefa = 0; tarefa < 3; tarefa++) {
         sem_wait(semaforo_nomeado); // Decrementa o semáforo
         sleep(10);
@@ -598,7 +601,7 @@ int main() {
     }
 
     for (int thread = 0; thread < NUMERO_DE_THREADS; thread++) {
-        if ((pthread_create(&lista_de_threads[thread], NULL, tarefa, NULL)) == -1) {
+        if ((pthread_create(&lista_de_threads[thread], NULL, tarefa, NULL)) != 0) {
             perror("Error ao criar uma thread!");
         }
     }
@@ -611,7 +614,7 @@ int main() {
 }
 ```
 
-### Remover e/ou dar Detach Semáforos Nomeados
+### Remover e/ou dar detach Semáforos Nomeados
 
 ```c
 int sem_close(sem_t *sem); // Sai do semáforo nomeado. "sem" é o ponteiro para o semáforo retornado pela função sem_open.
@@ -640,7 +643,7 @@ int main() {
 #include <sys/ipc.h> // Importar as flags IPC_CREAT, etc.
 ```
 
-## Criar e dar Attach em blocos de Memória Partilhada
+## Criar e dar attach em blocos de Memória Partilhada
 
 ```c
 int shmget(key_t key, size_t size, int shmflg); // Cria um id para a criação e/ou entrada num segmento de memória partilhada. "key" é a chave única para identificar o segmento de memória partilhada, "size" é o tamanho do segmento em bytes e "shmflg" são as flags de criação e permissões (IPC_CREAT para criar o segmento se não existir e as permissões em octal, por exemplo, 0777).
@@ -829,7 +832,7 @@ Exemplo:
 ```c
 #include <pthread.h> // Importar pthread.h para a criação de threads
 
-void* tarefa();
+void* tarefa(void* argumentos);
 
 (...)
 
@@ -859,7 +862,7 @@ int main() {
 
 ## **Pipes sem Nome (Unnamed Pipes)**
 
-### Criar e dar Attach em Pipes sem Nome
+### Criar e dar attach em Pipes sem Nome
 
 ```c
 int pipe(int fd_array[2]); // Cria um pipe sem nome, retornando dois file descriptors em fd_array. fd_array[0] é para leitura, fd_array[1] é para escrita. Retorna 0 em caso de sucesso e -1 em caso de erro.
@@ -875,12 +878,12 @@ ssize_t write(int fd, const void *buf, size_t count); // Escreve até "count" by
 Exemplo:
 
 ```c
-#include <stdio.h> // Importar stdio.h para os printfs e perrors
-#include <errno.h> // Importar errno.h para os perrors
+#include <stdio.h> // Importar stdio.h para usar os printf e perror
+#include <errno.h> // Importar errno.h para usar perror
 #include <string.h> // Importar string.h para comparação de strings
 #include <stdlib.h> // Importar stdlib.h para a função exit()
 
-int fd_pipe1[2], fd_pipe2[2]; // Cria um array para guardar os file descriptors do pipe1 e do pipe2
+int fd_pipe1[2], fd_pipe2[2]; // Cria um array para guardar os file descriptors dos pipes
 
 typedef struct {
     int idade;
@@ -888,7 +891,7 @@ typedef struct {
 } mensagem_t;
 
 int main() {
-    // Cria os unnamed pipes e guarda os file descriptors d cada pipe no array passado como parâmetro 
+    // Cria os unnamed pipes e guarda os file descriptors de cada pipe no array passado como parâmetro 
     if (pipe(fd_pipe1) == -1) {
         perror("Erro na criação do pipe1.");
     }
@@ -1009,7 +1012,7 @@ int main() {
 
 ## **Pipes com Nome (Named Pipes)**
 
-### Criar e dar Attach em Pipes com Nome
+### Criar e dar attach em Pipes com Nome
 
 ```c
 int mkfifo(const char *pathname, mode_t mode); // Cria um FIFO (named pipe) no caminho especificado ("pathname"), "mode" são as permissões (ex: 0666). Retorna 0 em caso de sucesso, -1 em caso  de erro.
@@ -1024,7 +1027,7 @@ Exemplo:
 ```c
 ```
 
-### Remover e/ou dar Dettach em Pipes com Nome
+### Remover e/ou dar detach em Pipes com Nome
 
 ```c
 int close(int fd); // Fecha o file descriptor "fd", libertando recursos associados. Retorna 0 em caso de sucesso e -1 em caso de erro.
@@ -1054,8 +1057,8 @@ int msgget(key_t key, int flags); // Cria uma fila de mensagens não persistente
 Exemplo:
 
 ```c
-#include <stdio.h> // Importar stdio.h para os printfs e perrors
-#include <errno.h> // Importar errno.h para os perrors
+#include <stdio.h> // Importar stdio.h para usar printf e perror
+#include <errno.h> // Importar errno.h para usar perror
 
 int main() {
     int message_queue_id = msgget(2006, IPC_CREAT | 0777);
