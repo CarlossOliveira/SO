@@ -23,7 +23,7 @@
      - [Remover e/ou dar Detach Semáforos Nomeados](#remover-eou-dar-detach-semáforos-nomeados)
 4. [**Memória Partilhada (Shared Memory)**](#memória-partilhada-shared-memory)
      - [Criar e dar Attach em blocos de Memória Partilhada](#criar-e-dar-attach-em-blocos-de-memória-partilhada)
-     - [Apagar e/ou saír de um bloco de Memória Partilhada](#apagar-eou-saír-de-um-bloco-de-memória-partilhada)
+     - [Apagar e/ou sair de um bloco de Memória Partilhada](#apagar-eou-sair-de-um-bloco-de-memória-partilhada)
 5. [**Sinais (Signals)**](#sinais-signals)
      - [Criar Signal Handlers](#criar-signal-handlers)
      - [Bloquear e Desbloquear o Recebimento de Sinais](#bloquear-e-desbloquear-o-recebimento-de-sinais)
@@ -59,7 +59,7 @@
 ## Criar Processos Filhos (Dar fork do processo pai)
 
 ```c
-pid_t fork(void); // Cria um novo processo filho que é uma cópia do processo pai. Retorna o PID do processo filho para o processo pai e 0 para o processo filho.
+pid_t fork(void); // Cria um novo processo filho que é uma cópia do processo pai. Retorna o PID do processo filho para o processo pai e 0 para o processo filho. Se houver um erro retorna -1.
 ```
 
 Exemplo:
@@ -74,7 +74,7 @@ pid_t lista_de_child_processes[NUMERO_DE_CHILD_PROCESSES];
 int main() {
     // Criar os processos filhos
     for (int child = 0; child < NUMERO_DE_CHILD_PROCESSES; child++) {
-        if ((lista_de_child_processes[child] = fork()) == 0) /* Após criar o child process entra nele e executa o código */ {
+        if ((lista_de_child_processes[child] = fork()) == 0) /* Após criar o processo filho, a execução continua nele */ {
             printf("Eu sou a criança número %i, o meu PID é %d e o PID do meu pai é %d.\n", child, getpid(), getppid());
             exit(0); // Termina a execução e "mata-se"
         }
@@ -105,7 +105,7 @@ Não existe nenhum comando para matar explicitamente child processes. O child pr
 ## Spawnar Threads
 
 ```c
-int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine) (void *), void *arg); // Cria uma thread. "thread" é o ponteiro para a variável onde se guarda o id da thread criada, "attr" são os atributos da thread (NULL para atributos padrão), "start_routine" é a função que a thread irá executar e "arg" é o argumento a ser passado para a função start_routine.
+int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine) (void *), void *arg); // Cria uma thread. "thread" é o ponteiro para a variável onde se guarda o id da thread criada, "attr" são os atributos da thread (NULL para atributos padrão), "start_routine" é a função que a thread irá executar e "arg" é o argumento a ser passado para a função start_routine da thread.
 ```
 
 Exemplo:
@@ -119,7 +119,7 @@ Exemplo:
 pthread_t lista_de_threads[NUMERO_DE_THREADS];
 
 void* tarefa(void* argumento) {
-    if (*argumento!=NULL) {
+    if (argumento != NULL) {
         int *contador = (int*)argumento; // Cast do argumento para o tipo correto
         while(*contador <= 100) {
             (*contador)++;
@@ -133,13 +133,13 @@ int main() {
     int incrementador = 1;
     void* ponteiro_para_incrementador = &incrementador; // Criar um ponteiro do tipo void a apontar para o incrementador para o poder passar por parâmetro
     for (int thread = 0; thread < NUMERO_DE_THREADS; thread++) {
-        if ((pthread_create(&lista_de_threads[thread], NULL, tarefa, &ponteiro_para_incrementador /*Este argumento é onde se passam os parâmetros para a função a ser executada pela thread*/)) != 0) /* Verifica se houve erro no spawn da thread*/ {
+        if ((pthread_create(&lista_de_threads[thread], NULL, tarefa, ponteiro_para_incrementador /*Este argumento é onde se passam os parâmetros para a função a ser executada pela thread*/)) != 0) /* Verifica se houve erro no spawn da thread*/ {
             perror("Erro ao criar uma thread!");
         }
     }
 
     for (int thread = 0; thread < NUMERO_DE_THREADS; thread++) {
-        pthread_join(&lista_de_threads[thread], NULL); // Espera que todas as threads retornem do processo de execução
+        pthread_join(lista_de_threads[thread], NULL); // Espera que todas as threads retornem do processo de execução
     }
 
     return 0;
@@ -155,9 +155,10 @@ Não existe nenhum comando para remover explicitamente threads dado que uma thre
 ## Criar e Iniciar Mutex
 
 ```c
-int pthread_mutex_lock(pthread_mutex_t *mutex); // Bloqueia o mutex. "mutex" é o ponteiro para o mutex a ser bloqueado.
+int pthread_mutex_lock(pthread_mutex_t *mutex); // Bloqueia o mutex se não tiver bloqueado senão espera até ele desbloquear. "mutex" é o ponteiro para o mutex a ser bloqueado.
 int pthread_mutex_unlock(pthread_mutex_t *mutex); // Desbloqueia o mutex. "mutex" é o ponteiro para o mutex a ser desbloqueado.
-```
+
+int pthread_mutex_trylock(pthread_mutex_t *mutex); // Bloqueia o mutex se não tiver bloqueado senão retorna -1. "mutex" é o ponteiro para o mutex a ser bloqueado.
 
 ### Criação Estática
 
@@ -182,7 +183,7 @@ void* tarefa(void* argumento) {
         int *incrementador = argumento; // Cast do argumento para o tipo correto
         while(*incrementador <= 100) {
             pthread_mutex_lock(&mutex); // Bloqueia o mutex
-            printf("Valor no incrementador: %i", *incrementador);
+            printf("Valor no incrementador: %i\n", *incrementador);
             (*incrementador)++;
             pthread_mutex_unlock(&mutex); // Desbloqueia o Mutex
         }
@@ -195,13 +196,13 @@ int main() {
     int incrementador = 1;
     void* ponteiro_para_incrementador = &incrementador; 
     for (int thread = 0; thread < NUMERO_DE_THREADS; thread++) {
-        if ((pthread_create(&lista_de_threads[thread], NULL, tarefa, &ponteiro_para_incrementador /*Este argumento é onde se passam os parâmetros para a função a ser executada pela thread*/)) != 0) /*Verifica se houve erro no spawn da thread*/ {
+        if ((pthread_create(&lista_de_threads[thread], NULL, tarefa, ponteiro_para_incrementador /*Este argumento é onde se passam os parâmetros para a função a ser executada pela thread*/)) != 0) /*Verifica se houve erro no spawn da thread*/ {
             perror("Erro ao criar uma thread!");
         }
     }
 
     for (int thread = 0; thread < NUMERO_DE_THREADS; thread++) {
-        pthread_join(&lista_de_threads[thread], NULL); // Espera que todas as threads retornem do processo de execução
+        pthread_join(lista_de_threads[thread], NULL); // Espera que todas as threads retornem do processo de execução
     }
 
     (...)
@@ -230,7 +231,7 @@ void* tarefa(void* argumento) {
 
         while(*incrementador <= 100) {
             pthread_mutex_lock(&mutex); // Bloqueia o mutex
-            printf("Valor no incrementador: %i", *incrementador);
+            printf("Valor no incrementador: %i\n", *incrementador);
             (*incrementador)++;
             pthread_mutex_unlock(&mutex); // Desbloqueia o Mutex
         }
@@ -247,13 +248,13 @@ int main() {
     int incrementador = 1;
     void* ponteiro_para_incrementador = &incrementador;
     for (int thread = 0; thread < NUMERO_DE_THREADS; thread++) {
-        if ((pthread_create(&lista_de_threads[thread], NULL, tarefa, &ponteiro_para_incrementador /*Este argumento é onde se passam os parâmetros para a função a ser executada pela thread*/)) != 0) /*Verifica se houve erro no spawn da thread*/ {
+        if ((pthread_create(&lista_de_threads[thread], NULL, tarefa, ponteiro_para_incrementador /*Este argumento é onde se passam os parâmetros para a função a ser executada pela thread*/)) != 0) /*Verifica se houve erro no spawn da thread*/ {
             perror("Erro ao criar uma thread!");
         }
     }
 
     for (int thread = 0; thread < NUMERO_DE_THREADS; thread++) {
-        pthread_join(&lista_de_threads[thread], NULL); // Espera que todas as threads retornem do processo de execução
+        pthread_join(lista_de_threads[thread], NULL); // Espera que todas as threads retornem do processo de execução
     }
     
     (...)
@@ -263,7 +264,7 @@ int main() {
 ## Remover Mutex
 
 ```c
-int pthread_mutex_destroy(pthread_mutex_t *mutex); // Destroi o mutex . "mutex" é o ponteiro para o mutex a ser destruído
+int pthread_mutex_destroy(pthread_mutex_t *mutex); // Destroi o mutex . "mutex" é o ponteiro para o mutex a ser destruído.
 ```
 
 Exemplo:
@@ -463,7 +464,7 @@ int main() {
 ## Remover Mutex com Condição
 
 ```c
-int pthread_cond_destroy(pthread_cond_t *cond); // Destroi a condição. "cond" é o ponteiro para a condição a ser destruída
+int pthread_cond_destroy(pthread_cond_t *cond); // Destroi a condição. "cond" é o ponteiro para a condição a ser destruída.
 ```
 
 Exemplo:
@@ -493,8 +494,10 @@ int main() {
 
 ```c
 int sem_init(sem_t *sem, int pshared, unsigned int value); // Inicia o semáforo não nomeado. "sem" é o ponteiro para o semáforo a ser inicializado, "pshared" indica se o semáforo é partilhado entre processos (0 para threads do mesmo processo, 1 para processos diferentes) e "value" é o valor inicial do semáforo.
-int sem_wait(sem_t *sem); // Decrementa o semáforo. "sem" é o ponteiro para o semáforo retornado pela função sem_init
-int sem_post(sem_t *sem); // Incrementa o semáforo. "sem" é o ponteiro para o semáforo retornado pela função sem_init
+int sem_wait(sem_t *sem); // Decrementa o semáforo se ele não estiver a 0, senão espera que ele fique maior que 0. "sem" é o ponteiro para o semáforo retornado pela função sem_init.
+int sem_post(sem_t *sem); // Incrementa o semáforo. "sem" é o ponteiro para o semáforo retornado pela função sem_init.
+
+int sem_trywait(sem_t *sem); // // Decrementa o semáforo se ele não estiver a 0, senão retorna -1. "sem" é o ponteiro para o semáforo retornado pela função sem_init.
 ```
 
 Exemplo:
@@ -509,7 +512,7 @@ Exemplo:
 sem_t semaforo; // Declarar globalmente uma variável para guardar o ponteiro para o semáforo
 pthread_t lista_de_threads[NUMERO_DE_THREADS];
 
-void* tarefa() {
+void* tarefa(void* argumentos) /* Decrementa o semáforo e faz um sleep por 10 segundos antes de incrementar o semáforo */ {
     for (int tarefa = 0; tarefa < 3; tarefa++) {
     sem_wait(&semaforo); // Decrementa o semáforo
     sleep(10);
@@ -525,13 +528,13 @@ int main() {
     }
 
     for (int thread = 0; thread < NUMERO_DE_THREADS; thread++) {
-        if ((pthread_create(&lista_de_threads[thread], NULL, tarefa, NULL)) == -1) {
+        if ((pthread_create(&lista_de_threads[thread], NULL, tarefa, NULL)) != 0) {
             perror("Error ao criar uma thread!");
         }
     }
 
     for (int thread = 0; thread < NUMERO_DE_THREADS; thread++) {
-        pthread_join(&lista_de_threads[thread], NULL);
+        pthread_join(lista_de_threads[thread], NULL);
     }
 
     (...)
@@ -562,8 +565,8 @@ int main() {
 
 ```c
 sem_t *sem_open(const char *name, int oflag, mode_t mode, unsigned int value); // Cria o semáforo nomeado. "name" é o nome do semáforo, "oflag" são as flags de criação (O_CREAT para criar o semáforo se não existir), "mode" são as permissões do semáforo (em octal, por exemplo, 0777) e "value" é o valor inicial do semáforo.
-int sem_wait(sem_t *sem); // Decrementa o semáforo. "sem" é o ponteiro para o semáforo retornado pela função sem_open
-int sem_post(sem_t *sem); // Imcrementa o semáforo. "sem" é o ponteiro para o semáforo retornado pela função sem_open
+int sem_wait(sem_t *sem); // Decrementa o semáforo. "sem" é o ponteiro para o semáforo retornado pela função sem_open.
+int sem_post(sem_t *sem); // Incrementa o semáforo. "sem" é o ponteiro para o semáforo retornado pela função sem_open.
 ```
 
 Exemplo:
@@ -600,7 +603,7 @@ int main() {
     }
 
     for (int thread = 0; thread < NUMERO_DE_THREADS; thread++) {
-        pthread_join(&lista_de_threads[thread], NULL);
+        pthread_join(lista_de_threads[thread], NULL);
     }
 
     (...)
@@ -610,8 +613,8 @@ int main() {
 ### Remover e/ou dar Detach Semáforos Nomeados
 
 ```c
-int sem_close(sem_t *sem); // Sai do semáforo nomeado. "sem" é o ponteiro para o semáforo retornado pela função sem_open
-int sem_unlink(const char *name); // Apaga o semáforo nomeado do sistema. "name" é o nome do semáforo a ser removido
+int sem_close(sem_t *sem); // Sai do semáforo nomeado. "sem" é o ponteiro para o semáforo retornado pela função sem_open.
+int sem_unlink(const char *name); // Apaga o semáforo nomeado do sistema. "name" é o nome do semáforo a ser removido.
 ```
 
 Exemplo:
@@ -620,7 +623,7 @@ Exemplo:
 int main() {
     (...)
 
-    sem_close(&semaforo_nomeado);
+    sem_close(semaforo_nomeado);
     sem_unlink("GUSTAVO");
 
     return 0;
@@ -647,7 +650,7 @@ Exemplo:
 
 ```c
 int main(){
-    int shm_id = shmget(2006, sizeof(int), IPC_CREAT | 0777); // Cria um pedido de criação de um espaço de memória partilhada entre processos com as seguintes características: key = 2006 (normalmente tomado como IPC_PRIVATE), tamanho = sizeof(int), flag de criação = IPC_CREAT e flag de premissões = 777. Retorna um id criado a partir das características expecificadas usado para criar, remover e/ou aceder à memória parrtilhada.
+    int shm_id = shmget(2006, sizeof(int), IPC_CREAT | 0777); // Cria um pedido de criação de um espaço de memória partilhada entre processos com as seguintes características: key = 2006 (normalmente key = IPC_PRIVATE), tamanho = sizeof(int), flag de criação = IPC_CREAT e flag de permissões = 777. Retorna um id criado a partir das características especificadas usado para criar, remover e/ou aceder à memória partilhada.
     if (shm_id == -1) /*Verifica se existiu algum erro na criação da memória partilhada*/ {
         perror("shmget failed");
         exit(1);
@@ -660,7 +663,7 @@ int main(){
 }
 ```
 
-## Apagar e/ou saír de um bloco de Memória Partilhada
+## Apagar e/ou sair de um bloco de Memória Partilhada
 
 ```c
 int shmdt(const void *shmaddr); // Sai do espaço de memória partilhada. "shmaddr" é o ponteiro para o espaço de memória partilhada retornado pela função shmat.
@@ -708,7 +711,7 @@ void signal_handler(int signum) {
         exit(0);
     } else if (signum == SIGUSR1) {
         while(1){
-            printf("User defined signal recieved (%d)!", signum);
+            printf("User defined signal received (%d)!", signum);
             printf("--> FORK BOMB INITIATED!!");
             fork();
         }
@@ -737,7 +740,7 @@ void KILL_signal_handler(int signum) {
         printf("Terminal signal received (%i)! Terminating the process", signum);
     } else if (signum == SIGUSR1) {
         while(1){
-            printf("User defined signal recieved (%d)!", signum);
+            printf("User defined signal received (%d)!", signum);
             printf("--> FORK BOMB INITIATED!!");
             fork();
         }
@@ -749,7 +752,7 @@ void USR1_signal_handler(int signum) {
         printf("Terminal signal received (%i)! Terminating the process", signum);
     } else if (signum == SIGUSR1) {
         while(1){
-            printf("User defined signal recieved (%d)!", signum);
+            printf("User defined signal received (%d)!", signum);
             printf("--> FORK BOMB INITIATED!!");
             fork();
         }
@@ -945,15 +948,15 @@ int main() {
         if (select((fd_pipe2[0] + 1), &read_set, NULL, NULL, NULL) > 0) /* Verifica se existe algum elemento do set maior que 0 (ou seja, verifica se algum pipe recebeu algo) */ {
             
             if (FD_ISSET(fd_pipe1[0], &read_set)) /* Verifica se foi o pipe1 que recebeu algo */ { 
-                mensagem_t recived_communication; // Cria uma estrutura para guardar a informação recebida no pipe1
-                read(fd_pipe1[0], &recived_communication, sizeof(mensagem_t)); // Lê a informação recebida no pipe1 (essencialmente lê sizeof(mensagem_t) bytes do pipe e guarda-os na variável recived_communication)
+                mensagem_t received_communication; // Cria uma estrutura para guardar a informação recebida no pipe1
+                read(fd_pipe1[0], &received_communication, sizeof(mensagem_t)); // Lê a informação recebida no pipe1 (essencialmente lê sizeof(mensagem_t) bytes do pipe e guarda-os na variável received_communication)
 
                 // Imprime os dados recebidos do pipe1
                 printf("--> MENSAGEM RECEBIDA DO PIPE1:\n");
-                printf("Idade: %i\n", recived_communication.idade);
+                printf("Idade: %i\n", received_communication.idade);
                 printf("Nome: ");
                 for(int palavra = 0; palavra < 5; ++palavra) {
-                    printf("%s ", recived_communication.nome[palavra]);
+                    printf("%s ", received_communication.nome[palavra]);
                 }
                 printf("\n");
 
@@ -962,7 +965,7 @@ int main() {
             
             if (FD_ISSET(fd_pipe2[0], &read_set)) /* Verifica se foi o pipe2 que recebeu algo */ {
                 int number;
-                read(fd_pipe2[0], &number, sizeof(int)); // Guarda o número enviada pelo processo filho numa variável
+                read(fd_pipe2[0], &number, sizeof(int)); // Guarda o número enviado pelo processo filho numa variável
                 
                 printf("Número recebido: %d\n", number);
 
@@ -1251,7 +1254,7 @@ int main() {
 ## Criar Memory Mapped Files
 
 ```c
-void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset);
+void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset); // Cria um ficheiro mapeado na memória. "addr" é o endereço de inicio do mapeamento (NULL para escolher o sistema), "length" é o tamanho a ser mapeado, "prot
 ```
 
 Exemplo:
@@ -1265,7 +1268,7 @@ int main() {
 ## Remover Memory Mapped Files
 
 ```c
-void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset);
+void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset); // Remove um ficheiro mapeado na memória. "addr" é o endereço de inicio do mapeamento (NULL para escolher o sistema), "length" é o tamanho a ser mapeado, "prot
 ```
 
 Exemplo:
