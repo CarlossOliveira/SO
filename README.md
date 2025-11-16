@@ -155,10 +155,11 @@ Não existe nenhum comando para remover explicitamente threads dado que uma thre
 ## Criar e Iniciar Mutex
 
 ```c
-int pthread_mutex_lock(pthread_mutex_t *mutex); // Bloqueia o mutex se não tiver bloqueado senão espera até ele desbloquear. "mutex" é o ponteiro para o mutex a ser bloqueado.
+int pthread_mutex_lock(pthread_mutex_t *mutex); // Bloqueia o mutex se não tiver bloqueado, senão, espera até ele desbloquear. "mutex" é o ponteiro para o mutex a ser bloqueado.
 int pthread_mutex_unlock(pthread_mutex_t *mutex); // Desbloqueia o mutex. "mutex" é o ponteiro para o mutex a ser desbloqueado.
 
-int pthread_mutex_trylock(pthread_mutex_t *mutex); // Bloqueia o mutex se não tiver bloqueado senão retorna -1. "mutex" é o ponteiro para o mutex a ser bloqueado.
+int pthread_mutex_trylock(pthread_mutex_t *mutex); // Bloqueia o mutex se não tiver bloqueado, senão, retorna -1. "mutex" é o ponteiro para o mutex a ser bloqueado.
+```
 
 ### Criação Estática
 
@@ -494,10 +495,10 @@ int main() {
 
 ```c
 int sem_init(sem_t *sem, int pshared, unsigned int value); // Inicia o semáforo não nomeado. "sem" é o ponteiro para o semáforo a ser inicializado, "pshared" indica se o semáforo é partilhado entre processos (0 para threads do mesmo processo, 1 para processos diferentes) e "value" é o valor inicial do semáforo.
-int sem_wait(sem_t *sem); // Decrementa o semáforo se ele não estiver a 0, senão espera que ele fique maior que 0. "sem" é o ponteiro para o semáforo retornado pela função sem_init.
+int sem_wait(sem_t *sem); // Decrementa o semáforo se ele não estiver a 0, senão, espera que ele fique maior que 0. "sem" é o ponteiro para o semáforo retornado pela função sem_init.
 int sem_post(sem_t *sem); // Incrementa o semáforo. "sem" é o ponteiro para o semáforo retornado pela função sem_init.
 
-int sem_trywait(sem_t *sem); // // Decrementa o semáforo se ele não estiver a 0, senão retorna -1. "sem" é o ponteiro para o semáforo retornado pela função sem_init.
+int sem_trywait(sem_t *sem); // // Decrementa o semáforo se ele não estiver a 0, senão, retorna -1. "sem" é o ponteiro para o semáforo retornado pela função sem_init.
 ```
 
 Exemplo:
@@ -770,9 +771,9 @@ int main(){
 ## Bloquear e Desbloquear o Recebimento de Sinais
 
 ```c
-int sigprocmask(int how, const sigset_t *set, sigset_t *oldset); // "how" pode ser SIG_BLOCK (bloquear), SIG_UNBLOCK (desbloquear) ou SIG_SETMASK (definir a máscara de sinais), "set" é o conjunto de sinais a bloquear/desbloquear e "oldset" é onde se guarda a máscara de sinais anterior.
-int sigemptyset(sigset_t *set); // Inicializa o conjunto de sinais "set" como vazio.
-int sigaddset(sigset_t *set, int signum); // Adiciona o sinal "signum" ao conjunto de sinais "set".
+int sigprocmask(int how, const sigset_t *set, sigset_t *oldset); // "how" pode ser SIG_BLOCK (bloquear), SIG_UNBLOCK (desbloquear) ou SIG_SETMASK (definir a máscara de sinais), set é o conjunto de sinais a bloquear/desbloquear e "oldset" é onde se guarda a máscara de sinais anterior.
+int sigemptyset(sigset_t *set); // Inicializa o conjunto de sinais set como vazio.
+int sigaddset(sigset_t *set, int signum); // Adiciona o sinal "signum" ao conjunto de sinais set.
 ```
 
 Exemplo:
@@ -781,17 +782,17 @@ Exemplo:
 #include <stdio.h> // Importar stdio.h para os printfs
 
 int main() {
-    sigset_t signal_set;
+    sigset_t signal_set; // Cria uma variável do tipo sigset_t para guardar um conjunto de sinais
+    sigemptyset(&signal_set); // Inicializa o conjunto a zeros (inicia o set a vazio)
 
-    sigemptyset(&signal_set); // Inicializar um conjunto de sinais vazio
+    sigaddset(&signal_set, SIGINT); // Adiciona o sinal SIGINT ao conjunto de sinais
 
-    sigaddset(&signal_set, SIGINT); // Adicionar ao conjunto o sinal a ser bloqueado
-
-    sigprocmask(SIG_BLOCK, &signal_set, NULL); // Aplicar uma máscara ao conjunto de sinais anteriormente iniciado (bloqueio)
+    sigprocmask(SIG_BLOCK, &signal_set, NULL); // Aplica uma máscara de bloqueio ao conjunto de sinais anteriormente criado e inicializado, bloqueando assim o recebimento dos sinais presentes nesse conjunto
 
     printf("SIGINT bloqueado! (Ctrl+C não funciona)\n");
 
-    sigprocmask(SIG_UNBLOCK, &signal_set, NULL); // Desbloquear o sinal
+    sigset_t old_signal_set;
+    sigprocmask(SIG_UNBLOCK, &signal_set, &old_signal_set); // Aplica uma máscara de desbloqueio ao conjunto de sinais anteriormente criado e inicializado, desbloqueando assim o recebimento dos sinais presentes nesse conjunto. Guarda a máscara antiga em old_signal_set para referência futura (isto é importante quando existirem múltiplos processos a modificar o mesmo conjunto de sinais)
 
     printf("SIGINT desbloqueado! (Ctrl+C funciona)\n");
 
@@ -864,7 +865,7 @@ int main() {
 int pipe(int fd_array[2]); // Cria um pipe sem nome, retornando dois file descriptors em fd_array. fd_array[0] é para leitura, fd_array[1] é para escrita. Retorna 0 em caso de sucesso e -1 em caso de erro.
 int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout); // Monitora múltiplos file descriptors. "nfds" é o valor do maior file descriptor + 1 (+1 porque é ), "readfds" são os FDs a monitorar para leitura, "writefds" para escrita, "exceptfds" para exceções, "timeout" é o tempo máximo de espera (NULL para bloqueio indefinido). Retorna o número de FDs prontos, 0 se ocorrer timeout, e -1 em caso de erro.
 void FD_ZERO(fd_set *set); // Inicializa um fd_set, limpando todos os bits. Usado antes de adicionar FDs com FD_SET. Não retorna valor.
-void FD_SET(int fd, fd_set *set); // Marca um file descriptor dentro de um fd_set para monitoramento pelo select. "fd" é o file descriptor a adicionar, "set" é o fd_set a atualizar. Não retorna valor.
+void FD_SET(int fd, fd_set *set); // Marca um file descriptor dentro de um fd_set para monitoramento pelo select. "fd" é o file descriptor a adicionar, set é o fd_set a atualizar. Não retorna valor.
 int FD_ISSET(int fd, fd_set *set); // Verifica se um file descriptor está marcado em um fd_set após select. Retorna um valor diferente de 0 se o FD está pronto, 0 caso contrário.
 
 ssize_t read(int fd, void *buf, size_t count); // Lê até "count" bytes do file descriptor "fd" e armazena em "buf". Retorna o número de bytes lidos até ao EOF, ou -1 em caso de erro.
