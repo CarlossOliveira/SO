@@ -2,8 +2,6 @@
 
 ## Índice
 
-## Índice
-
 1. [**Processos Filho (Child Processes with Fork)**](#processos-filho-child-processes-with-fork)
    - [Criar Processos Filhos](#criar-processos-filhos-dar-fork-do-processo-pai)
    - [Remover Processos Filhos](#remover-processos-filhos)
@@ -24,14 +22,14 @@
      - [Criar e dar attach Semáforos Nomeados](#criar-e-dar-attach-semáforos-nomeados)
      - [Remover e/ou dar detach Semáforos Nomeados](#remover-eou-dar-detach-semáforos-nomeados)
 4. [**Memória Partilhada (Shared Memory)**](#memória-partilhada-shared-memory)
-     - [Criar e dar attach em blocos de Memória Partilhada](#criar-e-dar-attach-em-blocos-de-memória-partilhada)
-     - [Apagar e/ou sair de um bloco de Memória Partilhada](#apagar-eou-sair-de-um-bloco-de-memória-partilhada)
+   - [Criar e dar attach em blocos de Memória Partilhada](#criar-e-dar-attach-em-blocos-de-memória-partilhada)
+   - [Apagar e/ou sair de um bloco de Memória Partilhada](#apagar-eou-sair-de-um-bloco-de-memória-partilhada)
 5. [**Sinais (Signals)**](#sinais-signals)
-     - [Criar Signal Handlers](#criar-signal-handlers)
-     - [Bloquear e Desbloquear o Recebimento de Sinais](#bloquear-e-desbloquear-o-recebimento-de-sinais)
-     - [Enviar Sinais](#enviar-sinais)
-       - [Enviar Sinais para Processos](#para-processos)
-       - [Enviar Sinais para Threads](#para-threads)
+   - [Criar Signal Handlers](#criar-signal-handlers)
+   - [Bloquear e Desbloquear o Recebimento de Sinais](#bloquear-e-desbloquear-o-recebimento-de-sinais)
+   - [Enviar Sinais](#enviar-sinais)
+     - [Enviar Sinais para Processos](#para-processos)
+     - [Enviar Sinais para Threads](#para-threads)
 6. [**Pipes**](#pipes)
    - [**Pipes sem Nome (Unnamed Pipes)**](#pipes-sem-nome-unnamed-pipes)
      - [Criar e dar attach em Pipes sem Nome](#criar-e-dar-attach-em-pipes-sem-nome)
@@ -54,8 +52,9 @@
 # **Processos Filho (Child Processes with Fork)**
 
 ```c
-#include <unistd.h>
-#include <sys/wait.h> // Necessário para mitigar a orfandade dos processos filhos
+#include <unistd.h> // include para fork(), getpid(), getppid()
+#include <sys/wait.h> // include para wait(), waitpid()
+#include <stdlib.h> // include para exit()
 ```
 
 ## Criar Processos Filhos (Dar fork do processo pai)
@@ -67,7 +66,7 @@ pid_t fork(void); // Cria um novo processo filho que é uma cópia do processo p
 Exemplo:
 
 ```c
-#include <stdio.h> // Importar stdio.h para os printfs
+#include <stdio.h> // Importar stdio.h para usar printf
 
 #define NUMERO_DE_CHILD_PROCESSES 10
 
@@ -101,7 +100,7 @@ Não existe nenhum comando para matar explicitamente child processes. O child pr
 # **Threads (Tasks)**
 
 ```c
-#include <pthread.h>
+#include <pthread.h> // include para pthread_create(), pthread_join(), pthread_mutex_init(), pthread_mutex_lock(), pthread_mutex_unlock(), pthread_mutex_destroy(), pthread_cond_init(), pthread_cond_wait(), pthread_cond_signal(), pthread_cond_broadcast(), pthread_cond_destroy()
 ```
 
 ## Spawnar Threads
@@ -197,7 +196,7 @@ void* tarefa(void* argumento) {
 
 int main() {
     int incrementador = 1;
-    void* ponteiro_para_incrementador = &incrementador; 
+    void* ponteiro_para_incrementador = &incrementador;
     for (int thread = 0; thread < NUMERO_DE_THREADS; thread++) {
         if ((pthread_create(&lista_de_threads[thread], NULL, tarefa, ponteiro_para_incrementador /*Este argumento é onde se passam os parâmetros para a função a ser executada pela thread*/)) != 0) /*Verifica se houve erro no spawn da thread*/ {
             perror("Erro ao criar uma thread!");
@@ -230,7 +229,7 @@ pthread_t lista_de_threads[NUMERO_DE_THREADS];
 
 void* tarefa(void* argumento) {
     if (argumento != NULL) {
-        int *incrementador = argumento; 
+        int *incrementador = argumento;
 
         while(*incrementador <= 100) {
             pthread_mutex_lock(&mutex); // Bloqueia o mutex
@@ -247,7 +246,7 @@ int main() {
     // Criar os mutexs
     pthread_mutex_t mutex; // Inicializa uma variável para guardar o mutex
     pthread_mutex_init(&mutex, NULL);  // Inicializa o mutex com os atributos a NULL
-    
+
     int incrementador = 1;
     void* ponteiro_para_incrementador = &incrementador;
     for (int thread = 0; thread < NUMERO_DE_THREADS; thread++) {
@@ -259,7 +258,7 @@ int main() {
     for (int thread = 0; thread < NUMERO_DE_THREADS; thread++) {
         pthread_join(lista_de_threads[thread], NULL); // Espera que todas as threads retornem do processo de execução
     }
-    
+
     (...)
 }
 ```
@@ -315,7 +314,7 @@ pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
 void* produtor(void* argumento) /* Incrementa um contador até 100, uma vez chegando a 100 termina e sinaliza a condição */ {
     if (argumento != NULL) {
-        int *contador = (int*)argumento; 
+        int *contador = (int*)argumento;
 
         while(*contador <= 100) {
             pthread_mutex_lock(&mutex); // Bloqueia o mutex
@@ -394,11 +393,11 @@ pthread_t lista_de_threads_produtoras[NUMERO_DE_THREADS_PRODUTORAS];
 pthread_t lista_de_threads_consumidoras[NUMERO_DE_THREADS_CONSUMIDORAS];
 
 pthread_mutex_t mutex; // Cria uma variável global para guardar o mutex
-pthread_cond_t cond; // Cria uma variável global para guardar a condição a ser sinalizada 
+pthread_cond_t cond; // Cria uma variável global para guardar a condição a ser sinalizada
 
 void* produtor(void* argumento) {
     if (argumento != NULL) {
-        int *contador = (int*)argumento; 
+        int *contador = (int*)argumento;
 
         while(*contador <= 100) {
             pthread_mutex_lock(&mutex); // Bloqueia o mutex
@@ -426,7 +425,7 @@ void* consumidor(void* argumento) /* Lê o valor do incrementador e termina */ {
 }
 
 int main() {
-    // Inicializar o mutex 
+    // Inicializar o mutex
     pthread_mutex_init(&mutex, NULL);  // Inicializa o mutex com os atributos a NULL
 
     // Inicializar a condição
@@ -477,7 +476,7 @@ int main() {
     (...)
 
     pthread_cond_destroy(&cond); // Destroi a condição
-    pthread_mutex_destroy(&mutex); // Destroi o mutex 
+    pthread_mutex_destroy(&mutex); // Destroi o mutex
 
     return 0;
 }
@@ -488,7 +487,8 @@ int main() {
 # **Semáforos (Semaphores)**
 
 ```c
-#include <semaphore.h>
+#include <semaphore.h> // include para sem_init(), sem_wait(), sem_post(), sem_destroy(), sem_open(), sem_close(), sem_unlink()
+#include <fcntl.h> // include para O_CREAT, O_EXCL
 ```
 
 ## **Semáforos Não Nomeados (Unnamed Semaphores)**
@@ -639,8 +639,8 @@ int main() {
 # **Memória Partilhada (Shared Memory)**
 
 ```c
-#include <sys/shm.h>
-#include <sys/ipc.h> // Importar as flags IPC_CREAT, etc.
+#include <sys/shm.h> // include para shmget(), shmat(), shmdt(), shmctl()
+#include <sys/ipc.h> // include para IPC keys (ftok) e estruturas de IPC
 ```
 
 ## Criar e dar attach em blocos de Memória Partilhada
@@ -693,13 +693,16 @@ int main(){
 # **Sinais (Signals)**
 
 ```c
-#include <signal.h>
+#include <signal.h> // include para manipulação de sinais (signal(), sigaction(), kill(), sigprocmask(), sigwait(), sigemptyset(), sigfillset(), sigaddset(), sigdelset(), sigset_t,...)
+#include <unistd.h> // include para pause()
 ```
 
 ## Criar Signal Handlers
 
 ```c
 sighandler_t signal(int signum, sighandler_t handler); // Cria um signal handler. "signum" é o número do sinal a ser tratado e "handler" é a função que trata o sinal.
+
+void sigaction(int signum, const struct sigaction *act, struct sigaction *oldact); // Cria um signal handler. "signum" é o número do sinal a ser tratado, "act" é um ponteiro para a estrutura sigaction que contém a nova ação para o sinal e "oldact" é um ponteiro para a estrutura sigaction que contém a antiga ação para o sinal (pode ser NULL).
 ```
 
 ### Tratar de todos os sinais numa função
@@ -707,7 +710,7 @@ sighandler_t signal(int signum, sighandler_t handler); // Cria um signal handler
 Exemplo:
 
 ```c
-#include <stdio.h> // Importar stdio.h para os printfs
+#include <stdio.h> // Importar stdio.h para usar printf
 
 void signal_handler(int signum) {
     if (signum == SIGTERM) {
@@ -737,9 +740,9 @@ int main(){
 Exemplo:
 
 ```c
-#include <stdio.h> // Importar stdio.h para os printfs
+#include <stdio.h> // Importar stdio.h para usar printf
 
-void KILL_signal_handler(int signum) {
+void TERM_signal_handler(int signum) {
     if (signum == SIGTERM) {
         printf("Terminal signal received (%i)! Terminating the process", signum);
     } else if (signum == SIGUSR1) {
@@ -764,7 +767,7 @@ void USR1_signal_handler(int signum) {
 }
 
 int main(){
-    signal(SIGTERM, KILL_signal_handler);
+    signal(SIGTERM, TERM_signal_handler);
     signal(SIGUSR1, USR1_signal_handler);
 
     return 0;
@@ -774,30 +777,41 @@ int main(){
 ## Bloquear e Desbloquear o Recebimento de Sinais
 
 ```c
-int sigprocmask(int how, const sigset_t *set, sigset_t *oldset); // "how" pode ser SIG_BLOCK (bloquear), SIG_UNBLOCK (desbloquear) ou SIG_SETMASK (definir a máscara de sinais), set é o conjunto de sinais a bloquear/desbloquear e "oldset" é onde se guarda a máscara de sinais anterior.
-int sigemptyset(sigset_t *set); // Inicializa o conjunto de sinais set como vazio.
-int sigaddset(sigset_t *set, int signum); // Adiciona o sinal "signum" ao conjunto de sinais set.
+int sigprocmask(int how, const sigset_t *set, sigset_t *oldset); // "how" pode ser SIG_BLOCK (bloquear), SIG_UNBLOCK (desbloquear) ou SIG_SETMASK (definir a máscara de sinais), "set" é o conjunto de sinais a bloquear/desbloquear e "oldset" é onde se guarda a máscara de sinais anterior.
+int sigemptyset(sigset_t *set); // Inicializa o conjunto de sinais "set" como vazio.
+int sigfillset(sigset_t *set); // Inicializa o conjunto de sinais "set" com todos os sinais.
+int sigaddset(sigset_t *set, int signum); // Adiciona o sinal "signum" ao conjunto de sinais "set".
+int sigdelset(sigset_t *set, int signo); // Remove o sinal "signum" do conjunto de sinais "set".
+int pause(void); // Pausa o processo até que um sinal seja recebido.
 ```
 
 Exemplo:
 
 ```c
-#include <stdio.h> // Importar stdio.h para os printfs
+#include <stdio.h> // Importar stdio.h para usar printf
 
 int main() {
     sigset_t signal_set; // Cria uma variável do tipo sigset_t para guardar um conjunto de sinais
     sigemptyset(&signal_set); // Inicializa o conjunto a zeros (inicia o set a vazio)
 
     sigaddset(&signal_set, SIGINT); // Adiciona o sinal SIGINT ao conjunto de sinais
+    sigaddset(&signal_set, SIGTERM); // Adiciona o sinal SIGTERM ao conjunto de sinais
+    sigaddset(&signal_set, SIGUSR1); // Adiciona o sinal SIGUSR1 ao conjunto de sinais
 
     sigprocmask(SIG_BLOCK, &signal_set, NULL); // Aplica uma máscara de bloqueio ao conjunto de sinais anteriormente criado e inicializado, bloqueando assim o recebimento dos sinais presentes nesse conjunto
 
-    printf("SIGINT bloqueado! (Ctrl+C não funciona)\n");
+    printf("Esperando um sinal não bloqueado...\n");
+    pause(); // Aguarda pelo recebimento de um sinal que não esteja bloqueado
+
+    printf("SIGINT, SIGTERM e SIGUSR1 estão bloqueados.\n");
+
+    sigdelset(&signal_set, SIGINT); // Remove o sinal SIGINT do conjunto de sinais (desbloqueia SIGINT)
+    printf("SIGINT desbloqueado (Ctrl + C funciona)!");
 
     sigset_t old_signal_set;
     sigprocmask(SIG_UNBLOCK, &signal_set, &old_signal_set); // Aplica uma máscara de desbloqueio ao conjunto de sinais anteriormente criado e inicializado, desbloqueando assim o recebimento dos sinais presentes nesse conjunto. Guarda a máscara antiga em old_signal_set para referência futura (isto é importante quando existirem múltiplos processos a modificar o mesmo conjunto de sinais)
 
-    printf("SIGINT desbloqueado! (Ctrl+C funciona)\n");
+    printf("SIGTERM e SIGUSR1 desbloqueados!\n");
 
     return 0;
 }
@@ -891,7 +905,7 @@ typedef struct {
 } mensagem_t;
 
 int main() {
-    // Cria os unnamed pipes e guarda os file descriptors de cada pipe no array passado como parâmetro 
+    // Cria os unnamed pipes e guarda os file descriptors de cada pipe no array passado como parâmetro
     if (pipe(fd_pipe1) == -1) {
         perror("Erro na criação do pipe1.");
     }
@@ -901,7 +915,7 @@ int main() {
 
     // Código do processo filho 1
     if (fork() == 0) {
-        // Como se fez um fork e TUDO do processo pai foi herdado para o processo filho (incluindo unnamed pipes criados pelo pai), é necessário fechar os pipes estranhos ao processo filho que estamos a manipular 
+        // Como se fez um fork e TUDO do processo pai foi herdado para o processo filho (incluindo unnamed pipes criados pelo pai), é necessário fechar os pipes estranhos ao processo filho que estamos a manipular
         close(fd_pipe2[0]);
         close(fd_pipe2[1]);
 
@@ -914,7 +928,7 @@ int main() {
         write(fd_pipe1[1], &content, sizeof(content));
 
         exit(0);
-    } 
+    }
 
     // Código do processo filho 2
     if (fork() == 0) {
@@ -944,14 +958,14 @@ int main() {
         // Cria um set de file descriptors de LEITURA e coloca-o a 0
         fd_set read_set;
         FD_ZERO(&read_set);
-        
+
         // Atualiza o set de file descriptors (se o pipe receber algo atualiza, a posição no set, correspondente ao pipe com um valor maior que 0)
         FD_SET(fd_pipe1[0], &read_set);
-        FD_SET(fd_pipe2[0], &read_set);   
+        FD_SET(fd_pipe2[0], &read_set);
 
         if (select((fd_pipe2[0] + 1), &read_set, NULL, NULL, NULL) > 0) /* Verifica se existe algum elemento do set maior que 0 (ou seja, verifica se algum pipe recebeu algo) */ {
-            
-            if (FD_ISSET(fd_pipe1[0], &read_set)) /* Verifica se foi o pipe1 que recebeu algo */ { 
+
+            if (FD_ISSET(fd_pipe1[0], &read_set)) /* Verifica se foi o pipe1 que recebeu algo */ {
                 mensagem_t received_communication; // Cria uma estrutura para guardar a informação recebida no pipe1
                 read(fd_pipe1[0], &received_communication, sizeof(mensagem_t)); // Lê a informação recebida no pipe1 (essencialmente lê sizeof(mensagem_t) bytes do pipe e guarda-os na variável received_communication)
 
@@ -965,12 +979,12 @@ int main() {
                 printf("\n");
 
                 tarefa_realizada++;
-            } 
-            
+            }
+
             if (FD_ISSET(fd_pipe2[0], &read_set)) /* Verifica se foi o pipe2 que recebeu algo */ {
                 int number;
                 read(fd_pipe2[0], &number, sizeof(int)); // Guarda o número enviado pelo processo filho numa variável
-                
+
                 printf("Número recebido: %d\n", number);
 
                 tarefa_realizada++;
@@ -984,7 +998,7 @@ int main() {
         if (tarefa_realizada == 2) {
             break;
         }
-    } 
+    }
 
     (...)
 }
@@ -1025,6 +1039,7 @@ ssize_t write(int fd, const void *buf, size_t count); // Escreve até "count" by
 Exemplo:
 
 ```c
+
 ```
 
 ### Remover e/ou dar detach em Pipes com Nome
@@ -1037,6 +1052,7 @@ int unlink(const char *pathname); // Remove o FIFO ou arquivo do sistema de fich
 Exemplo:
 
 ```c
+
 ```
 
 ---
@@ -1186,7 +1202,7 @@ int main() {
             perror("Error receiving message!");
             exit(1);
         }
-        
+
         printf("MENSAGEM RECEBIDA DO PRESIDENTE, PRIORIDADE %ld : %s", received_message.PRIORITY, received_message.PAYLOAD.message);
 
         sleep(10);
@@ -1278,18 +1294,19 @@ void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset)
 Exemplo:
 
 ```c
+
 ```
 
 # **TABELA DE RESUMO**
 
-| **Tema** | **Funções Principais** | **Bibliotecas Necessárias** | **Descrição / Observações** |
-|-----------|------------------------|------------------------------|------------------------------|
-| **Sinais (Signals)** | `signal()`, `kill()`, `sigaction()`, `pause()`, `raise()` | `<signal.h>` | Comunicação entre processos. `kill(pid, sig)` envia sinal. `signal(SIGINT, handler)` define tratador. |
-| **Bloqueio de Sinais** | `sigemptyset()`, `sigaddset()`, `pthread_sigmask()` | `<signal.h>` | Cria máscara de sinais para bloquear/permitir certos sinais. |
-| **Threads** | `pthread_create()`, `pthread_join()`, `pthread_exit()` | `<pthread.h>` | Cria threads num processo. `pthread_create(&tid, NULL, func, arg)` → cria nova thread. |
-| **Mutexes** | `pthread_mutex_init()`, `pthread_mutex_lock()`, `pthread_mutex_unlock()`, `pthread_mutex_destroy()` | `<pthread.h>` | Exclusão mútua: protege regiões críticas. |
-| **Variáveis Condicionais** | `pthread_cond_init()`, `pthread_cond_wait()`, `pthread_cond_signal()`, `pthread_cond_broadcast()`, `pthread_cond_destroy()` | `<pthread.h>` | Sincronizam threads com base em condições; usadas com mutexes. |
-| **Semáforos** | `sem_init()`, `sem_wait()`, `sem_post()`, `sem_destroy()` | `<semaphore.h>` | Controlam acesso a recursos partilhados. `sem_init(&sem, 0, N)` cria semáforo com valor inicial `N`. |
-| **Memória Partilhada (SHM)** | `shmget()`, `shmat()`, `shmdt()`, `shmctl()` | `<sys/ipc.h>`, `<sys/shm.h>` | Partilha memória entre processos. `shmget(key, size, IPC_CREAT \| 0666)` cria/obtém segmento. |
-| **Fork (Processos)** | `fork()`, `wait()`, `waitpid()` | `<unistd.h>`, `<sys/wait.h>` | Cria novo processo. Retorna 0 ao filho e PID ao pai. |
-| **Funções Auxiliares** | `getpid()`, `getppid()`, `sleep()`, `perror()` | `<unistd.h>`, `<stdio.h>` | Identificação e temporização de processos. |
+| **Tema**                     | **Funções Principais**                                                                                                      | **Bibliotecas Necessárias**  | **Descrição / Observações**                                                                           |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ---------------------------- | ----------------------------------------------------------------------------------------------------- |
+| **Sinais (Signals)**         | `signal()`, `kill()`, `sigaction()`, `pause()`, `raise()`                                                                   | `<signal.h>`                 | Comunicação entre processos. `kill(pid, sig)` envia sinal. `signal(SIGINT, handler)` define tratador. |
+| **Bloqueio de Sinais**       | `sigemptyset()`, `sigaddset()`, `pthread_sigmask()`                                                                         | `<signal.h>`                 | Cria máscara de sinais para bloquear/permitir certos sinais.                                          |
+| **Threads**                  | `pthread_create()`, `pthread_join()`, `pthread_exit()`                                                                      | `<pthread.h>`                | Cria threads num processo. `pthread_create(&tid, NULL, func, arg)` → cria nova thread.                |
+| **Mutexes**                  | `pthread_mutex_init()`, `pthread_mutex_lock()`, `pthread_mutex_unlock()`, `pthread_mutex_destroy()`                         | `<pthread.h>`                | Exclusão mútua: protege regiões críticas.                                                             |
+| **Variáveis Condicionais**   | `pthread_cond_init()`, `pthread_cond_wait()`, `pthread_cond_signal()`, `pthread_cond_broadcast()`, `pthread_cond_destroy()` | `<pthread.h>`                | Sincronizam threads com base em condições; usadas com mutexes.                                        |
+| **Semáforos**                | `sem_init()`, `sem_wait()`, `sem_post()`, `sem_destroy()`                                                                   | `<semaphore.h>`              | Controlam acesso a recursos partilhados. `sem_init(&sem, 0, N)` cria semáforo com valor inicial `N`.  |
+| **Memória Partilhada (SHM)** | `shmget()`, `shmat()`, `shmdt()`, `shmctl()`                                                                                | `<sys/ipc.h>`, `<sys/shm.h>` | Partilha memória entre processos. `shmget(key, size, IPC_CREAT \| 0666)` cria/obtém segmento.         |
+| **Fork (Processos)**         | `fork()`, `wait()`, `waitpid()`                                                                                             | `<unistd.h>`, `<sys/wait.h>` | Cria novo processo. Retorna 0 ao filho e PID ao pai.                                                  |
+| **Funções Auxiliares**       | `getpid()`, `getppid()`, `sleep()`, `perror()`                                                                              | `<unistd.h>`, `<stdio.h>`    | Identificação e temporização de processos.                                                            |
