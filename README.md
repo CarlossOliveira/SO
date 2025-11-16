@@ -660,7 +660,7 @@ sighandler_t signal(int signum, sighandler_t handler); // Cria um signal handler
 Exemplo:
 
 ```c
-#include <string.h> // Importar string.h para os printfs
+#include <stdio.h> // Importar stdio.h para os printfs
 
 void signal_handler(int signum) {
     if (signum == SIGKILL) {
@@ -805,6 +805,10 @@ int main() {
 ## **Pipes**
 
 ```c
+#include <sys/select.h> // include para select(), FD_ZERO(), FD_SET(), FD_ISSET(),...
+#include <sys/stat.h> // include para mkfifo()
+#include <fcntl.h> // include para open(), O_RDONLY, O_WRONLY,...
+#include <unistd.h> // include para read(), write(), close()
 ```
 
 ### **Pipes sem Nome (Unnamed Pipes)**
@@ -812,21 +816,145 @@ int main() {
 #### Criar e dar Attach em Pipes sem Nome
 
 ```c
+int pipe(int fd_array[2]); // Cria um pipe sem nome, retornando dois file descriptors em fd_array. fd_array[0] é para leitura, fd_array[1] é para escrita. Retorna 0 em caso de sucesso e -1 em caso de erro.
+int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout); // Monitora múltiplos file descriptors. "nfds" é o valor do maior file descriptor + 1 (+1 porque é exclusivo), "readfds" são os FDs a monitorar para leitura, "writefds" para escrita, "exceptfds" para exceções, "timeout" é o tempo máximo de espera (NULL para bloqueio indefinido). Retorna o número de FDs prontos, 0 se ocorrer timeout, e -1 em caso de erro.
+void FD_ZERO(fd_set *set); // Inicializa um fd_set, limpando todos os bits. Usado antes de adicionar FDs com FD_SET. Não retorna valor.
+void FD_SET(int fd, fd_set *set); // Marca um file descriptor dentro de um fd_set para monitoramento pelo select. "fd" é o file descriptor a adicionar, "set" é o fd_set a atualizar. Não retorna valor.
+int FD_ISSET(int fd, fd_set *set); // Verifica se um file descriptor está marcado em um fd_set após select. Retorna um valor diferente de 0 se o FD está pronto, 0 caso contrário.
+
+ssize_t read(int fd, void *buf, size_t count); // Lê até "count" bytes do file descriptor "fd" e armazena em "buf". Retorna o número de bytes lidos até ao EOF, ou -1 em caso de erro.
+ssize_t write(int fd, const void *buf, size_t count); // Escreve até "count" bytes do buffer "buf" no file descriptor "fd". Retorna o número de bytes escritos, ou -1 em caso de erro.
 ```
 
 Exemplo:
 
 ```c
+#include <stdio.h> // Importar stdio.h para os printfs e perrors
+#include <errno.h> // Importar errono.h para os perrors
+#include <string.h> // Importar string.h para comparação de strings
+#include <stdlib.h> // Importar stdlib.h para a função exit()
+
+int fd_pipe1[2], fd_pipe2[2]; // Cria um array para guardar os file descriptors do pipe1 e do pipe2
+
+typedef struct {
+    int idade;
+    char nome[5][20];
+} mensagem_t;
+
+int main() {
+    // Cria os unnamed pipes e guarda os file descriptors no array passado como parâmetro 
+    if (pipe(fd_pipe1) == -1) {
+        perror("Erro na criação do pipe1.");
+    }
+    if (pipe(fd_pipe2) == -1) {
+        perror("Erro na criação do pipe2.");
+    }
+
+    if (fork() == 0) {
+        // Como se fez um fork e TUDO do processo pai foi herdado para o processo filho (incluindo unnamed pipes criados pelo pai), é necessário fechar os pipes estranhos ao processo filho que estamos a manipular 
+        close(fd_pipe2[0]);
+        close(fd_pipe2[1]);
+
+        close(fd_pipe1[0]); // Fecha a entrada do pipe destinada para a leitura uma vez que o processo não irá nem deve ler do pipe (fecha o File Descriptor do pipe associado à leitura)
+
+        // Neste caso, cria a estrutura de dados a ser enviada pelo pipe
+        mensagem_t content = {19, {"Carlos", "Miguel", "Almeida", "de", "Oliveira"}};
+
+        // Escreve o conteúdo a ser enviado para o pipe
+        write(fd_pipe1[1], &content, sizeof(content));
+
+        exit(0);
+    } 
+
+    if (fork() == 0) {
+        close(fd_pipe1[0]);
+        close(fd_pipe1[1]);
+
+        close(fd_pipe2[0]);
+
+        int numero_especial = 2006;
+
+        write(fd_pipe2[1], &numero_especial, sizeof(numero_especial));
+
+        exit(0);
+    }
+
+    // Fecha os file descriptors do pipes associados à escrita
+    close(fd_pipe1[1]);
+    close(fd_pipe2[1]);
+
+    int tarefa_realizada = 0;
+    int contador_execucoes = 0;
+
+    // Loop de verificação de recebimento nos pipes
+    while (1) {
+        // Cria um set de file descriptors de LEITURA e coloca-o a 0
+        fd_set read_set;
+        FD_ZERO(&read_set);
+        
+        // Atualiza o set de file descriptors (se o pipe receber algo atualiza, a posição no set, correspondente ao pipe com um valor maior que 0)
+        FD_SET(fd_pipe1[0], &read_set);
+        FD_SET(fd_pipe2[0], &read_set);   
+
+        if (select((fd_pipe2[0] + 1), &read_set, NULL, NULL, NULL) > 0) /* Verifica se existe algum elemento do set maior que 0 (ou seja, verifica se algum pipe recebeu algo) */ {
+            
+            if (FD_ISSET(fd_pipe1[0], &read_set)) /* Verifica se foi o pipe1 que recebeu algo */ { 
+                mensagem_t recived_communication; // Cria uma estrutura para guardar a informação recebida no pipe1
+                read(fd_pipe1[0], &recived_communication, sizeof(mensagem_t)); // Lê a informação recebida no pipe1 (essencialmente lê sizeof(mensagem_t) bytes do pipe e guarda-os na variável recived_communication)
+
+                // Imprime os dados recebidos do pipe1
+                printf("--> MENSAGEM RECEBIDA DO PIPE1:\n");
+                printf("Idade: %i\n", recived_communication.idade);
+                printf("Nome: ");
+                for(int palavra = 0; palavra < 5; ++palavra) {
+                    printf("%s ", recived_communication.nome[palavra]);
+                }
+                printf("\n");
+
+                tarefa_realizada++;
+            } 
+            
+            if (FD_ISSET(fd_pipe2[0], &read_set)) /* Verifica se foi o pipe2 que recebeu algo */ {
+                int number;
+                read(fd_pipe2[0], &number, sizeof(int)); // Guarda o número enviada pelo processo filho numa variável
+                
+                printf("Número recebido: %d\n", number);
+
+                tarefa_realizada++;
+            }
+        }
+
+        contador_execucoes++;
+        printf("Execução número %i\n", contador_execucoes);
+
+        // Após receber informação dos dois pipes, termina o loop de leitura
+        if (tarefa_realizada == 2) {
+            break;
+        }
+    } 
+
+    (...)
+}
 ```
 
-#### Remover e/ou dar Attach em Pipes sem Nome
+#### Remover Pipes sem Nome
 
 ```c
+int close(int fd); // Fecha o file descriptor "fd", libertando recursos associados. Retorna 0 em caso de sucesso e -1 em caso de erro.
 ```
 
 Exemplo:
 
 ```c
+int main() {
+    (...)
+
+    // Fecha os file descriptors dos pipes associados à leitura. Uma vez todos os file descriptors fechados, o sistema operativo automáticamente destroi o espaço de memória alocado para os unnamed pipes
+    close(fd_pipe1[0]);
+    close(fd_pipe2[0]);
+
+    return 0;
+}
 ```
 
 ### **Pipes com Nome (Named Pipes)**
@@ -834,6 +962,13 @@ Exemplo:
 #### Criar e dar Attach em Pipes com Nome
 
 ```c
+int mkfifo(const char *pathname, mode_t mode); // Cria um FIFO (named pipe) no caminho especificado ("pathname"), "mode" são as permissões (ex: 0666). Retorna 0 em caso de sucesso, -1 em caso  de erro.
+int unlink(const char *pathname); // Remove o FIFO ou arquivo do sistema de ficheiros. "pathname" é o caminho do FIFO. Retorna 0 em caso de sucesso ou -1 em caso de erro.
+
+int open(const char *pathname, int flags); // Abre um arquivo ou FIFO. "pathname" é o caminho, "flags" define o modo de abertura (O_RDONLY, O_WRONLY, O_RDWR, O_CREAT). Retorna um file descriptor em caso de sucesso ou -1 em caso de erro.
+
+ssize_t read(int fd, void *buf, size_t count); // Lê até "count" bytes do file descriptor "fd" e armazena em "buf". Retorna o número de bytes lidos até ao EOF, ou -1 em caso de erro.
+ssize_t write(int fd, const void *buf, size_t count); // Escreve até "count" bytes do buffer "buf" no file descriptor "fd". Retorna o número de bytes escritos, ou -1 em caso de erro.
 ```
 
 Exemplo:
