@@ -806,7 +806,7 @@ int main() {
     printf("SIGINT, SIGTERM e SIGUSR1 estão bloqueados.\n");
 
     sigdelset(&signal_set, SIGINT); // Remove o sinal SIGINT do conjunto de sinais (desbloqueia SIGINT)
-    printf("SIGINT desbloqueado (Ctrl + C funciona)!");
+    printf("SIGINT desbloqueado (Ctrl + C funciona)!\n");
 
     sigset_t old_signal_set;
     sigprocmask(SIG_UNBLOCK, &signal_set, &old_signal_set); // Aplica uma máscara de desbloqueio ao conjunto de sinais anteriormente criado e inicializado, desbloqueando assim o recebimento dos sinais presentes nesse conjunto. Guarda a máscara antiga em old_signal_set para referência futura (isto é importante quando existirem múltiplos processos a modificar o mesmo conjunto de sinais)
