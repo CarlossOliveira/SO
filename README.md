@@ -1061,7 +1061,7 @@ Exemplo:
 
 ```c
 #include <sys/msg.h>
-#include <sys/ipc.h> // Importar as flags IPC_CREAT, IPC_RMID,...
+#include <sys/ipc.h> // include para IPC_CREAT, IPC_RMID,...
 ```
 
 ## Criar Filas de Mensagens
@@ -1274,7 +1274,7 @@ int main() {
 ## Criar Memory Mapped Files
 
 ```c
-void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset); // Cria um ficheiro mapeado na memória. "addr" é o endereço de inicio do mapeamento (NULL para escolher o sistema), "length" é o tamanho a ser mapeado, "prot
+void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset); // Cria ou entrar num mmap. "addr" é o endereço onde se deseja mapear o ficheiro (NULL para deixar o sistema escolher), "length" é o tamanho do espaço a mapear, "prot" são as permissões (PROT_READ, PROT_WRITE, PROT_EXEC), "flags" são as flags de mapeamento (MAP_SHARED para permitir acesso comum ao mmap), "fd" é o file descriptor do ficheiro a mapear e "offset" é o offset onde se deseja começar a mapear. Retorna o endereço do mmap em caso de sucesso ou MAP_FAILED (-1) em caso de erro.
 ```
 
 Exemplo:
@@ -1288,7 +1288,7 @@ int main() {
 ## Remover Memory Mapped Files
 
 ```c
-void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset); // Remove um ficheiro mapeado na memória. "addr" é o endereço de inicio do mapeamento (NULL para escolher o sistema), "length" é o tamanho a ser mapeado, "prot
+int munmap(void *addr, size_t length); // Desmapeia a memória partilhada. "addr" é o endereço de início da área de memória a desmapear e "length" é o tamanho da área de memória a desmapear. Retorna 0 em caso de sucesso ou -1 em caso de erro.
 ```
 
 Exemplo:
