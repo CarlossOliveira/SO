@@ -2,7 +2,7 @@
 
 ## Índice
 
-1. [**Processos Filhos (Child Processes with Fork)**](#processos-filhos-child-processes-with-fork)
+1. [**Processos Filho(Child Processes with Fork)**](#processos-filho-child-processes-with-fork)
    - [Criar Processos Filhos](#criar-processos-filhos-dar-fork-do-processo-pai)
    - [Remover Processos Filhos](#remover-processos-filhos)
 2. [**Threads (Tasks)**](#threads-tasks)
@@ -32,7 +32,7 @@
        - [Enviar Sinais para Threads](#para-threads)
 6. [**Pipes**](#pipes)
    - [**Pipes sem Nome (Unnamed Pipes)**](#pipes-sem-nome-unnamed-pipes)
-     - [Criar e dar Attach em Pipes sem Nome](#criar-e-dar-attach-em-pipes-sem-nome)
+     - [Criar e dar Attach em Pipes sem Nome](#criar-e-dar-attach-em-pipes-sem- nome)
      - [Remover e/ou dar Attach em Pipes sem Nome](#remover-pipes-sem-nome)
    - [**Pipes com Nome (Named Pipes)**](#pipes-com-nome-named-pipes)
      - [Criar e dar Attach em Pipes com Nome](#criar-e-dar-attach-em-pipes-com-nome)
@@ -47,14 +47,16 @@
    - [Remover e/ou dar Detach em Memory Mapped Files](#remover-memory-mapped-files)
 9. [**Tabela de Resumo**](#tabela-de-resumo)
 
-## Processos Filhos (Child Processes with Fork)
+---
+
+# **Processos Filho (Child Processes with Fork)**
 
 ```c
 #include <unistd.h>
 #include <sys/wait.h> // Necessário para mitigar a orfandade dos processos filhos
 ```
 
-### **Criar Processos Filhos (Dar fork do processo pai)**
+## Criar Processos Filhos (Dar fork do processo pai)
 
 ```c
 pid_t fork(void); // Cria um novo processo filho que é uma cópia do processo pai. Retorna o PID do processo filho para o processo pai e 0 para o processo filho.
@@ -87,17 +89,19 @@ int main() {
 
 ```
 
-### Remover Processos Filhos
+## Remover Processos Filhos
 
 Não existe nenhum comando para matar explicitamente child processes. O child process só é efetivamente removido uma vez que execute um exit(0) para terminar o processo ou uma vez que receba um SIGKILL.
 
-## **Threads (Tasks)**
+---
+
+# **Threads (Tasks)**
 
 ```c
 #include <pthread.h>
 ```
 
-### Spawnar Threads
+## Spawnar Threads
 
 ```c
 int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine) (void *), void *arg); // Cria uma thread. "thread" é o ponteiro para a variável onde se guarda o id da thread criada, "attr" são os atributos da thread (NULL para atributos padrão), "start_routine" é a função que a thread irá executar e "arg" é o argumento a ser passado para a função start_routine.
@@ -138,15 +142,15 @@ int main() {
 }
 ```
 
-### Remover Threads
+## Remover Threads
 
 Não existe nenhum comando para remover explicitamente threads dado que uma thread é apenas uma "linha de execução" de um processo, ou seja, uma thread só é efetivamente removida quando o processo que spawnou a thread termina ou quando o trabalho da thread é concluído e ela retorna.
 
-### **Mutex Exclusivo**
+# Mutex Exclusivo
 
-#### Criar e Iniciar Mutex Exclusivo
+## Criar e Iniciar Mutex Exclusivo
 
-#### Criação Estática
+### Criação Estática
 
 ```c
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER; // Cria uma variável global para guardar o mutex e inicia o mutex de forma estática e predefinida
@@ -194,7 +198,7 @@ int main() {
 }
 ```
 
-#### Criação Dinâmica
+### Criação Dinâmica
 
 ```c
 int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr); // Inicializa o mutex exclusivo. "mutex" é o ponteiro para o mutex a ser inicializado e "attr" são os atributos do mutex (NULL para atributos padrão).
@@ -244,7 +248,7 @@ int main() {
 }
 ```
 
-#### Remover Mutex Exclusivo
+## Remover Mutex Exclusivo
 
 ```c
 int pthread_mutex_destroy(pthread_mutex_t *mutex); // Destroi o mutex exclusivo. "mutex" é o ponteiro para o mutex a ser destruído
@@ -262,11 +266,11 @@ int main() {
 }
 ```
 
-### **Mutex Condicional**
+# Mutex Condicional
 
-#### Criar e Iniciar Mutex Condicional
+## Criar e Iniciar Mutex Condicional
 
-#### Criação Estática
+### Criação Estática
 
 ```c
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER; // Cria uma variável global para guardar o mutex condicional e inicia o mutex condicional de forma estática e predefinida
@@ -344,7 +348,7 @@ int main() {
 }
 ```
 
-#### Criação Dinâmica
+### Criação Dinâmica
 
 ```c
 int pthread_cond_init(pthread_cond_t *cond, const pthread_condattr_t *attr);  // Inicializa o mutex condicional. "cond" é o ponteiro para o mutex condicional a ser inicializado e "attr" são os atributos do mutex condicional (NULL para atributos padrão).
@@ -428,7 +432,7 @@ int main() {
 }
 ```
 
-#### Remover Mutex Condicional
+## Remover Mutex Condicional
 
 ```c
 int pthread_cond_destroy(pthread_cond_t *cond); // Destroi o mutex condicional. "cond" é o ponteiro para o mutex condicional a ser destruído
@@ -447,15 +451,17 @@ int main() {
 }
 ```
 
-## **Semáforos (Semaphores)**
+---
+
+# **Semáforos (Semaphores)**
 
 ```c
 #include <semaphore.h>
 ```
 
-### **Semáforos Não Nomeados (Unnamed Semaphores)**
+## **Semáforos Não Nomeados (Unnamed Semaphores)**
 
-#### Criar e dar Attach em Semáforos Não Nomeados
+### Criar e dar Attach em Semáforos Não Nomeados
 
 ```c
 int sem_init(sem_t *sem, int pshared, unsigned int value); // Inicia o semáforo não nomeado. "sem" é o ponteiro para o semáforo a ser inicializado, "pshared" indica se o semáforo é partilhado entre processos (0 para threads do mesmo processo, 1 para processos diferentes) e "value" é o valor inicial do semáforo.
@@ -504,7 +510,7 @@ int main() {
 }
 ```
 
-#### Remover e/ou dar Detach Semáforos Não Nomeados
+### Remover e/ou dar Detach Semáforos Não Nomeados
 
 ```c
 int sem_destroy(sem_t *sem); // "sem" é o ponteiro para o semáforo a ser destruído
@@ -521,9 +527,9 @@ int main() {
 }
 ```
 
-### **Semáforos Nomeados (Named Semaphores)**
+## **Semáforos Nomeados (Named Semaphores)**
 
-#### Criar e dar Attach Semáforos Nomeados
+### Criar e dar Attach Semáforos Nomeados
 
 ```c
 sem_t *sem_open(const char *name, int oflag, mode_t mode, unsigned int value); // Cria o semáforo nomeado. "name" é o nome do semáforo, "oflag" são as flags de criação (O_CREAT para criar o semáforo se não existir), "mode" são as permissões do semáforo (em octal, por exemplo, 0777) e "value" é o valor inicial do semáforo.
@@ -572,7 +578,7 @@ int main() {
 }
 ```
 
-#### Remover e/ou dar Detach Semáforos Nomeados
+### Remover e/ou dar Detach Semáforos Nomeados
 
 ```c
 int sem_close(sem_t *sem); // Sai do semáforo nomeado. "sem" é o ponteiro para o semáforo retornado pela função sem_open
@@ -591,14 +597,16 @@ int main() {
 }
 ```
 
-## **Memória Partilhada (Shared Memory)**
+---
+
+# **Memória Partilhada (Shared Memory)**
 
 ```c
 #include <sys/shm.h>
 #include <sys/ipc.h> // Importar as flags IPC_CREAT, etc.
 ```
 
-### Criar e dar Attach em blocos de Memória Partilhada
+## Criar e dar Attach em blocos de Memória Partilhada
 
 ```c
 int shmget(key_t key, size_t size, int shmflg); // Cria um id para a criação e/ou entrada num segmento de memória partilhada. "key" é a chave única para identificar o segmento de memória partilhada, "size" é o tamanho do segmento em bytes e "shmflg" são as flags de criação e permissões (IPC_CREAT para criar o segmento se não existir e as permissões em octal, por exemplo, 0777).
@@ -622,7 +630,7 @@ int main(){
 }
 ```
 
-### Apagar e/ou saír de um bloco de Memória Partilhada
+## Apagar e/ou saír de um bloco de Memória Partilhada
 
 ```c
 int shmdt(const void *shmaddr); // Sai do espaço de memória partilhada. "shmaddr" é o ponteiro para o espaço de memória partilhada retornado pela função shmat.
@@ -643,19 +651,21 @@ int main(){
 }
 ```
 
-## **Sinais (Signals)**
+---
+
+# **Sinais (Signals)**
 
 ```c
 #include <signal.h>
 ```
 
-### Criar Signal Handlers
+## Criar Signal Handlers
 
 ```c
 sighandler_t signal(int signum, sighandler_t handler); // Cria um signal handler. "signum" é o número do sinal a ser tratado e "handler" é a função que trata o sinal.
 ```
 
-#### Tratar de todos os sinais numa função
+### Tratar de todos os sinais numa função
 
 Exemplo:
 
@@ -685,7 +695,7 @@ int main(){
 }
 ```
 
-#### Tratar dos sinais em funções distintas
+### Tratar dos sinais em funções distintas
 
 Exemplo:
 
@@ -724,7 +734,7 @@ int main(){
 }
 ```
 
-### Bloquear e Desbloquear o Recebimento de Sinais
+## Bloquear e Desbloquear o Recebimento de Sinais
 
 ```c
 int sigprocmask(int how, const sigset_t *set, sigset_t *oldset); // "how" pode ser SIG_BLOCK (bloquear), SIG_UNBLOCK (desbloquear) ou SIG_SETMASK (definir a máscara de sinais), "set" é o conjunto de sinais a bloquear/desbloquear e "oldset" é onde se guarda a máscara de sinais anterior.
@@ -756,9 +766,9 @@ int main() {
 }
 ```
 
-### Enviar Sinais
+## Enviar Sinais
 
-#### Para Processos
+### Para Processos
 
 ```c
 int kill(pid_t pid, int sig); // Enviar sinal "sig" para o processo com PID "pid".
@@ -774,7 +784,7 @@ int main() {
 }
 ```
 
-#### Para Threads
+### Para Threads
 
 ```c
 int pthread_kill(pthread_t thread, int sig); // Enviar sinal "sig" para a thread com ID "thread".
@@ -802,7 +812,9 @@ int main() {
 }
 ```
 
-## **Pipes**
+---
+
+# **Pipes**
 
 ```c
 #include <sys/select.h> // include para select(), FD_ZERO(), FD_SET(), FD_ISSET(),...
@@ -811,9 +823,9 @@ int main() {
 #include <unistd.h> // include para read(), write(), close()
 ```
 
-### **Pipes sem Nome (Unnamed Pipes)**
+## **Pipes sem Nome (Unnamed Pipes)**
 
-#### Criar e dar Attach em Pipes sem Nome
+### Criar e dar Attach em Pipes sem Nome
 
 ```c
 int pipe(int fd_array[2]); // Cria um pipe sem nome, retornando dois file descriptors em fd_array. fd_array[0] é para leitura, fd_array[1] é para escrita. Retorna 0 em caso de sucesso e -1 em caso de erro.
@@ -941,7 +953,7 @@ int main() {
 }
 ```
 
-#### Remover Pipes sem Nome
+### Remover Pipes sem Nome
 
 ```c
 int close(int fd); // Fecha o file descriptor "fd", libertando recursos associados. Retorna 0 em caso de sucesso e -1 em caso de erro.
@@ -961,9 +973,9 @@ int main() {
 }
 ```
 
-### **Pipes com Nome (Named Pipes)**
+## **Pipes com Nome (Named Pipes)**
 
-#### Criar e dar Attach em Pipes com Nome
+### Criar e dar Attach em Pipes com Nome
 
 ```c
 int mkfifo(const char *pathname, mode_t mode); // Cria um FIFO (named pipe) no caminho especificado ("pathname"), "mode" são as permissões (ex: 0666). Retorna 0 em caso de sucesso, -1 em caso  de erro.
@@ -978,7 +990,7 @@ Exemplo:
 ```c
 ```
 
-#### Remover e/ou dar Dettach em Pipes com Nome
+### Remover e/ou dar Dettach em Pipes com Nome
 
 ```c
 int close(int fd); // Fecha o file descriptor "fd", libertando recursos associados. Retorna 0 em caso de sucesso e -1 em caso de erro.
@@ -990,14 +1002,16 @@ Exemplo:
 ```c
 ```
 
-## **Filas de Mensagens (Message Queues)**
+---
+
+# **Filas de Mensagens (Message Queues)**
 
 ```c
 #include <sys/msg.h>
 #include <sys/ipc.h> // Importar as flags IPC_CREAT, IPC_RMID,...
 ```
 
-### Criar Filas de Mensagens
+## Criar Filas de Mensagens
 
 ```c
 int msgget(key_t key, int flags); // Cria uma fila de mensagens não persistente (durante a execução do programa) com chave única "key" e flags de criação "flags" (IPC_CREAT para criar a fila se não existir e as permissões em octal, por exemplo, 0777). Retorna um id usado para criar, remover e/ou aceder à fila de mensagens.
@@ -1020,7 +1034,7 @@ int main() {
 }
 ```
 
-### Enviar Mensagens
+## Enviar Mensagens
 
 ```c
 int msgsnd(int msqid, const void* message, size_t length, int flags); // Envia a mensagem "message" para a fila de mensagens com id "msqid". "length" é o tamanho da mensagem a enviar e "flags" são as flags de envio.
@@ -1104,7 +1118,7 @@ int main() {
 }
 ```
 
-### Ler Mensagens
+## Ler Mensagens
 
 ```c
 int msgrcv(int msqid, void* message, size_t length, long msgtype, int flags); // Lê a mensagem da fila de mensagens com id "msqid" e guarda-a na estrutura "message". "length" é o tamanho da mensagem a ler e "msgtype" é o tipo de mensagem (o long da estrutura de dados da mensagem, message_t) a ler.
@@ -1169,7 +1183,7 @@ int main() {
 }
 ```
 
-### Remover Filas de Mensagens
+## Remover Filas de Mensagens
 
 ```c
 int msgctl(int msqid, int cmd, struct msqid_ds* buff); // Remove a fila de mensagens com id "msqid". "cmd" é a operação a realizar (IPC_RMID para remover a fila) e "buff" é um ponteiro para uma estrutura de dados usada para obter ou definir informações sobre a fila de mensagens (normalmente não é utilizado então atribui-se NULL).
@@ -1187,13 +1201,15 @@ int main() {
 }
 ```
 
-## **Ficheiros Mapeados na Memória (Memory Mapped Files)**
+---
+
+# **Ficheiros Mapeados na Memória (Memory Mapped Files)**
 
 ```c
 #include <sys/mman.h>
 ```
 
-### Criar Memory Mapped Files
+## Criar Memory Mapped Files
 
 ```c
 void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset);
@@ -1207,7 +1223,7 @@ int main() {
 }
 ```
 
-### Remover Memory Mapped Files
+## Remover Memory Mapped Files
 
 ```c
 void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset);
@@ -1218,7 +1234,7 @@ Exemplo:
 ```c
 ```
 
-## **TABELA DE RESUMO**
+# **TABELA DE RESUMO**
 
 | **Tema** | **Funções Principais** | **Bibliotecas Necessárias** | **Descrição / Observações** |
 |-----------|------------------------|------------------------------|------------------------------|
