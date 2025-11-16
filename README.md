@@ -33,7 +33,7 @@
 6. [**Pipes**](#pipes)
    - [**Pipes sem Nome (Unnamed Pipes)**](#pipes-sem-nome-unnamed-pipes)
      - [Criar e dar Attach em Pipes sem Nome](#criar-e-dar-attach-em-pipes-sem-nome)
-     - [Remover e/ou dar Attach em Pipes sem Nome](#remover-eou-dar-attach-em-pipes-sem-nome)
+     - [Remover e/ou dar Attach em Pipes sem Nome](#remover-pipes-sem-nome)
    - [**Pipes com Nome (Named Pipes)**](#pipes-com-nome-named-pipes)
      - [Criar e dar Attach em Pipes com Nome](#criar-e-dar-attach-em-pipes-com-nome)
      - [Remover e/ou dar Attach em Pipes com Nome](#remover-eou-dar-dettach-em-pipes-com-nome)
@@ -842,7 +842,7 @@ typedef struct {
 } mensagem_t;
 
 int main() {
-    // Cria os unnamed pipes e guarda os file descriptors no array passado como parâmetro 
+    // Cria os unnamed pipes e guarda os file descriptors d cada pipe no array passado como parâmetro 
     if (pipe(fd_pipe1) == -1) {
         perror("Erro na criação do pipe1.");
     }
@@ -850,6 +850,7 @@ int main() {
         perror("Erro na criação do pipe2.");
     }
 
+    // Código do processo filho 1
     if (fork() == 0) {
         // Como se fez um fork e TUDO do processo pai foi herdado para o processo filho (incluindo unnamed pipes criados pelo pai), é necessário fechar os pipes estranhos ao processo filho que estamos a manipular 
         close(fd_pipe2[0]);
@@ -866,6 +867,7 @@ int main() {
         exit(0);
     } 
 
+    // Código do processo filho 2
     if (fork() == 0) {
         close(fd_pipe1[0]);
         close(fd_pipe1[1]);
@@ -878,6 +880,8 @@ int main() {
 
         exit(0);
     }
+
+    // Código principal do processo pai (main)
 
     // Fecha os file descriptors do pipes associados à escrita
     close(fd_pipe1[1]);
@@ -963,8 +967,6 @@ int main() {
 
 ```c
 int mkfifo(const char *pathname, mode_t mode); // Cria um FIFO (named pipe) no caminho especificado ("pathname"), "mode" são as permissões (ex: 0666). Retorna 0 em caso de sucesso, -1 em caso  de erro.
-int unlink(const char *pathname); // Remove o FIFO ou arquivo do sistema de ficheiros. "pathname" é o caminho do FIFO. Retorna 0 em caso de sucesso ou -1 em caso de erro.
-
 int open(const char *pathname, int flags); // Abre um arquivo ou FIFO. "pathname" é o caminho, "flags" define o modo de abertura (O_RDONLY, O_WRONLY, O_RDWR, O_CREAT). Retorna um file descriptor em caso de sucesso ou -1 em caso de erro.
 
 ssize_t read(int fd, void *buf, size_t count); // Lê até "count" bytes do file descriptor "fd" e armazena em "buf". Retorna o número de bytes lidos até ao EOF, ou -1 em caso de erro.
@@ -977,6 +979,11 @@ Exemplo:
 ```
 
 #### Remover e/ou dar Dettach em Pipes com Nome
+
+```c
+int close(int fd); // Fecha o file descriptor "fd", libertando recursos associados. Retorna 0 em caso de sucesso e -1 em caso de erro.
+int unlink(const char *pathname); // Remove o FIFO ou arquivo do sistema de ficheiros. "pathname" é o caminho do FIFO. Retorna 0 em caso de sucesso ou -1 em caso de erro.
+```
 
 Exemplo:
 
