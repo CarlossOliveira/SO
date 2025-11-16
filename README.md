@@ -8,12 +8,12 @@
 2. [**Threads (Tasks)**](#threads-tasks)
    - [Spawnar Threads](#spawnar-threads)
    - [Remover Threads](#remover-threads)
-   - [**Mutex Exclusivo**](#mutex-exclusivo)
-     - [Criar e Iniciar Mutex Exclusivo](#criar-e-iniciar-mutex-exclusivo)
-     - [Remover Mutex Exclusivo](#remover-mutex-exclusivo)
-   - [**Mutex Condicional**](#mutex-condicional)
-     - [Criar e Iniciar Mutex Condicional](#criar-e-iniciar-mutex-condicional)
-     - [Remover Mutex Condicional](#remover-mutex-condicional)
+   - [**Mutex **](#mutex-)
+     - [Criar e Iniciar Mutex ](#criar-e-iniciar-mutex-)
+     - [Remover Mutex ](#remover-mutex-)
+   - [**Mutex com Condição**](#mutex-condicional)
+     - [Criar e Iniciar Mutex com Condição](#criar-e-iniciar-mutex-condicional)
+     - [Remover Mutex com Condição](#remover-mutex-condicional)
 3. [**Semáforos (Semaphores)**](#semáforos-semaphores)
    - [**Semáforos Não Nomeados (Unnamed Semaphores)**](#semáforos-não-nomeados-unnamed-semaphores)
      - [Criar e dar Attach em Semáforos Não Nomeados](#criar-e-dar-attach-em-semáforos-não-nomeados)
@@ -72,18 +72,19 @@ Exemplo:
 pid_t lista_de_child_processes[NUMERO_DE_CHILD_PROCESSES];
 
 int main() {
-    // Criar os processos filhos:
+    // Criar os processos filhos
     for (int child = 0; child < NUMERO_DE_CHILD_PROCESSES; child++) {
         if ((lista_de_child_processes[child] = fork()) == 0) /* Após criar o child process entra nele e executa o código */ {
-            printf("Eu sou a criança número %i, o meu PID é %d e o PID do meu pai é %d.", child, getpid(), getppid());
+            printf("Eu sou a criança número %i, o meu PID é %d e o PID do meu pai é %d.\n", child, getpid(), getppid());
             exit(0); // Termina a execução e "mata-se"
         }
     }
 
-    // Espera pelos Child Processes antes de terminar:
+    // Espera pelos Child Processes antes de terminar
     for (int child = 0; child < NUMERO_DE_CHILD_PROCESSES; child++) {
         wait(NULL);
     }
+
     return 0;
 }
 
@@ -91,7 +92,7 @@ int main() {
 
 ## Remover Processos Filhos
 
-Não existe nenhum comando para matar explicitamente child processes. O child process só é efetivamente removido uma vez que execute um exit(0) para terminar o processo ou uma vez que receba um SIGKILL.
+Não existe nenhum comando para matar explicitamente child processes. O child process só é efetivamente removido uma vez que execute um exit(0) para terminar o processo ou uma vez que receba um SIGTERM.
 
 ---
 
@@ -111,25 +112,28 @@ Exemplo:
 
 ```c
 #include <stdio.h> // Importar stdio.h para os perrors
-#include <errno.h> // Importar errono.h para os perrors
+#include <errno.h> // Importar errno.h para os perrors
 
 #define NUMERO_DE_THREADS 5
 
-pthread_t lista_de_threads[N_DE_THREADS];
+pthread_t lista_de_threads[NUMERO_DE_THREADS];
 
-void* tarefa(int* argumento) {
-    if (argumento!=NULL) {
-        while(argumentos <= 100) {
-            argumento++;
+void* tarefa(void* argumento) {
+    if (*argumento!=NULL) {
+        int *contador = (int*)argumento; // Cast do argumento para o tipo correto
+        while(*contador <= 100) {
+            (*contador)++;
         }
     }
+
     return NULL;
 }
 
 int main() {
     int incrementador = 1;
+    void* ponteiro_para_incrementador = &incrementador; // Criar um ponteiro do tipo void a apontar para o incrementador para o poder passar por parâmetro
     for (int thread = 0; thread < NUMERO_DE_THREADS; thread++) {
-        if ((pthread_create(&lista_de_threads[thread], NULL, tarefa, &incrementador /*Este argumento é onde se passam os parâmetros para a função a ser executada pela thread*/)) == -1) /* Verifica se houve erro no spawn da thread*/ {
+        if ((pthread_create(&lista_de_threads[thread], NULL, tarefa, &ponteiro_para_incrementador /*Este argumento é onde se passam os parâmetros para a função a ser executada pela thread*/)) != 0) /* Verifica se houve erro no spawn da thread*/ {
             perror("Erro ao criar uma thread!");
         }
     }
@@ -146,46 +150,52 @@ int main() {
 
 Não existe nenhum comando para remover explicitamente threads dado que uma thread é apenas uma "linha de execução" de um processo, ou seja, uma thread só é efetivamente removida quando o processo que spawnou a thread termina ou quando o trabalho da thread é concluído e ela retorna.
 
-# Mutex Exclusivo
+# Mutex
 
-## Criar e Iniciar Mutex Exclusivo
+## Criar e Iniciar Mutex
+
+```c
+int pthread_mutex_lock(pthread_mutex_t *mutex); // Bloqueia o mutex. "mutex" é o ponteiro para o mutex a ser bloqueado.
+int pthread_mutex_unlock(pthread_mutex_t *mutex); // Desbloqueia o mutex. "mutex" é o ponteiro para o mutex a ser desbloqueado.
+```
 
 ### Criação Estática
 
 ```c
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER; // Cria uma variável global para guardar o mutex e inicia o mutex de forma estática e predefinida
-int pthread_mutex_lock(pthread_mutex_t *mutex); // Bloqueia o mutex. "mutex" é o ponteiro para o mutex a ser bloqueado.
-int pthread_mutex_unlock(pthread_mutex_t *mutex); // Desbloqueia o mutex. "mutex" é o ponteiro para o mutex a ser desbloqueado.
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER; // Cria uma variável global para guardar o mutex e inicia o mutex de forma estática e predefinida.
 ```
 
 Exemplo:
 
 ```c
 #include <stdio.h> // Importar stdio.h para os perrors
-#include <errno.h> // Importar errono.h para os perrors
+#include <errno.h> // Importar errno.h para os perrors
 
 #define NUMERO_DE_THREADS 5
 
-pthread_t lista_de_threads[N_DE_THREADS];
+pthread_t lista_de_threads[NUMERO_DE_THREADS];
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER; // Cria uma variável global para guardar o mutex e inicia o mutex
 
-void* tarefa(int* argumento) {
+void* tarefa(void* argumento) {
     if (argumento != NULL) {
-        while(argumento <= 100) {
+        int *incrementador = argumento; // Cast do argumento para o tipo correto
+        while(*incrementador <= 100) {
             pthread_mutex_lock(&mutex); // Bloqueia o mutex
-            printf("Valor no incrementador: %i", argumento);
-            argumento++;
+            printf("Valor no incrementador: %i", *incrementador);
+            (*incrementador)++;
             pthread_mutex_unlock(&mutex); // Desbloqueia o Mutex
         }
     }
+
     return NULL;
 }
 
 int main() {
     int incrementador = 1;
+    void* ponteiro_para_incrementador = &incrementador; 
     for (int thread = 0; thread < NUMERO_DE_THREADS; thread++) {
-        if ((pthread_create(&lista_de_threads[thread], NULL, tarefa, &incrementador /*Este argumento é onde se passam os parâmetros para a função a ser executada pela thread*/)) == -1) /*Verifica se houve erro no spawn da thread*/ {
+        if ((pthread_create(&lista_de_threads[thread], NULL, tarefa, &ponteiro_para_incrementador /*Este argumento é onde se passam os parâmetros para a função a ser executada pela thread*/)) != 0) /*Verifica se houve erro no spawn da thread*/ {
             perror("Erro ao criar uma thread!");
         }
     }
@@ -201,41 +211,43 @@ int main() {
 ### Criação Dinâmica
 
 ```c
-int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr); // Inicializa o mutex exclusivo. "mutex" é o ponteiro para o mutex a ser inicializado e "attr" são os atributos do mutex (NULL para atributos padrão).
-int pthread_mutex_lock(pthread_mutex_t *mutex); // Bloqueia o mutex. "mutex" é o ponteiro para o mutex a ser bloqueado.
-int pthread_mutex_unlock(pthread_mutex_t *mutex); // Desbloqueia o mutex. "mutex" é o ponteiro para o mutex a ser desbloqueado.
+int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr); // Inicializa o mutex. "mutex" é o ponteiro para o mutex a ser inicializado e "attr" são os atributos do mutex (NULL para atributos padrão).
 ```
 
 Exemplo:
 
 ```c
 #include <stdio.h> // Importar stdio.h para os perrors
-#include <errno.h> // Importar errono.h para os perrors
+#include <errno.h> // Importar errno.h para os perrors
 
 #define NUMERO_DE_THREADS 5
 
-pthread_t lista_de_threads[N_DE_THREADS];
+pthread_t lista_de_threads[NUMERO_DE_THREADS];
 
-void* tarefa(int* argumento) {
+void* tarefa(void* argumento) {
     if (argumento != NULL) {
-        while(argumento <= 100) {
+        int *incrementador = argumento; 
+
+        while(*incrementador <= 100) {
             pthread_mutex_lock(&mutex); // Bloqueia o mutex
-            printf("Valor no incrementador: %i", argumento);
-            argumento++;
+            printf("Valor no incrementador: %i", *incrementador);
+            (*incrementador)++;
             pthread_mutex_unlock(&mutex); // Desbloqueia o Mutex
         }
     }
+
     return NULL;
 }
 
 int main() {
-    // Criar os mutexs:
+    // Criar os mutexs
     pthread_mutex_t mutex; // Inicializa uma variável para guardar o mutex
     pthread_mutex_init(&mutex, NULL);  // Inicializa o mutex com os atributos a NULL
     
     int incrementador = 1;
+    void* ponteiro_para_incrementador = &incrementador;
     for (int thread = 0; thread < NUMERO_DE_THREADS; thread++) {
-        if ((pthread_create(&lista_de_threads[thread], NULL, tarefa, &incrementador /*Este argumento é onde se passam os parâmetros para a função a ser executada pela thread*/)) == -1) /*Verifica se houve erro no spawn da thread*/ {
+        if ((pthread_create(&lista_de_threads[thread], NULL, tarefa, &ponteiro_para_incrementador /*Este argumento é onde se passam os parâmetros para a função a ser executada pela thread*/)) != 0) /*Verifica se houve erro no spawn da thread*/ {
             perror("Erro ao criar uma thread!");
         }
     }
@@ -248,10 +260,10 @@ int main() {
 }
 ```
 
-## Remover Mutex Exclusivo
+## Remover Mutex
 
 ```c
-int pthread_mutex_destroy(pthread_mutex_t *mutex); // Destroi o mutex exclusivo. "mutex" é o ponteiro para o mutex a ser destruído
+int pthread_mutex_destroy(pthread_mutex_t *mutex); // Destroi o mutex . "mutex" é o ponteiro para o mutex a ser destruído
 ```
 
 Exemplo:
@@ -266,82 +278,93 @@ int main() {
 }
 ```
 
-# Mutex Condicional
+# Mutex com Condição
 
-## Criar e Iniciar Mutex Condicional
+## Criar e Iniciar Mutex com Condição
+
+```c
+int pthread_cond_signal(pthread_cond_t *cond); // Sinaliza a condição (desbloqueia uma thread que esteja à espera da condição). "cond" é o ponteiro para a variável de condição a ser sinalizada. Usada em cenários que apenas uma thread ouvem sinais numa condição.
+int pthread_cond_broadcast(pthread_cond_t *cond); // Sinaliza a condição (desbloqueia todas as threads que estejam à espera da condição). "cond" é o ponteiro para a variável de condição a ser sinalizada. Usada em cenários que uma ou mais threads ouvem sinais numa condição.
+int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex); // Espera pelo sinal na condição (desbloqueia o mutex e bloqueia a thread até que a condição seja sinalizada, uma vez que a condição é sinalizada o mutex volta a ser bloqueado e a thread desbloqueia assim evitando deadlock). "cond" é o ponteiro para a variável de condição e "mutex" é o ponteiro para o mutex.
+```
 
 ### Criação Estática
 
 ```c
-pthread_cond_t cond = PTHREAD_COND_INITIALIZER; // Cria uma variável global para guardar o mutex condicional e inicia o mutex condicional de forma estática e predefinida
-int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex); // Espera pela condição. "cond" é o ponteiro para o mutex condicional e "mutex" é o ponteiro para o mutex exclusivo associado.
-int pthread_cond_signal(pthread_cond_t *cond); // Sinaliza a condição. "cond" é o ponteiro para o mutex condicional.
+pthread_cond_t cond = PTHREAD_COND_INITIALIZER; // Cria uma variável global para guardar uma condição e inicia-la de forma estática e predefinida.
 ```
 
 Exemplo:
 
 ```c
 #include <stdio.h> // Importar stdio.h para os perrors
-#include <errno.h> // Importar errono.h para os perrors
+#include <errno.h> // Importar errno.h para os perrors
 
 #define NUMERO_DE_THREADS_PRODUTORAS 5
-#define NUMERO_DE_THREADS_CONSUMIDORAS 3
+#define NUMERO_DE_THREADS_CONSUMIDORAS 1
 
 pthread_t lista_de_threads_produtoras[NUMERO_DE_THREADS_PRODUTORAS];
 pthread_t lista_de_threads_consumidoras[NUMERO_DE_THREADS_CONSUMIDORAS];
 
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER; // Cria uma variável global para guardar o mutex e inicia o mutex
-pthread_cond_t cond = PTHREAD_COND_INITIALIZER; // Cria uma variável global para guardar o mutex condicional e inicia o mutex condicional
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
-void* produtor(int* argumento) {
+void* produtor(void* argumento) /* Incrementa um contador até 100, uma vez chegando a 100 termina e sinaliza a condição */ {
     if (argumento != NULL) {
-        while(argumento <= 100) {
+        int *contador = (int*)argumento; 
+
+        while(*contador <= 100) {
             pthread_mutex_lock(&mutex); // Bloqueia o mutex
-            printf("Valor no incrementador: %i", argumento);
-            pthread_cond_signal(&cond); // Sinaliza a condição (desbloqueia uma thread que esteja à espera da condição)
-            argumento++;
+            printf("Valor no incrementador: %i\n", (*contador));
+            (*contador)++;
             pthread_mutex_unlock(&mutex); // Desbloqueia o Mutex
         }
+        pthread_cond_signal(&cond); // Sinaliza a condição (desbloqueia a thread que esteja à espera da condição)
     }
+
     return NULL;
 }
 
-void *consumidor(int* argumento) {
+void* consumidor(void* argumento) /* Lê o valor do incrementador e termina */ {
     if (argumento != NULL) {
-        while(argumento <= 100) {
-            pthread_mutex_lock(&mutex); // Bloqueia o mutex
-            pthread_cond_wait(&cond, &mutex); // Espera pela condição (desbloqueia o mutex e bloqueia a thread até que a condição seja sinalizada)
-            printf("Consumidor a processar o valor: %i", argumento);
-            pthread_mutex_unlock(&mutex); // Desbloqueia o Mutex
-        }
+        int *contador = (int*)argumento;
+
+        pthread_mutex_lock(&mutex); // Bloqueia o mutex
+        pthread_cond_wait(&cond, &mutex); // Espera pelo sinal na condição (desbloqueia o mutex e bloqueia a thread até que a condição seja sinalizada, uma vez que a condição é sinalizada o mutex volta a ser bloqueado e a thread desbloqueia assim evitando deadlock)
+        printf("Consumidor a processar o valor: %i\n", (*contador));
+        pthread_mutex_unlock(&mutex); // Desbloqueia o Mutex
     }
+
     return NULL;
 }
 
 int main() {
-    // Criar as threads produtoras:
+    // Criar incrementador e um ponteiro do tipo void a apontar para ele para o poder passar por parâmetro
     int incrementador = 1;
+    void* ponteiro_para_incrementador = &incrementador;
+
+    // Criar as threads produtoras
     for (int thread = 0; thread < NUMERO_DE_THREADS_PRODUTORAS; thread++) {
-        if ((pthread_create(&lista_de_threads_produtoras[thread], NULL, produtor, &incrementador /*Este argumento é onde se passam os parâmetros para a função a ser executada pela thread*/)) == -1) /*Verifica se houve erro no spawn da thread*/ {
+        if (pthread_create(&lista_de_threads_produtoras[thread], NULL, produtor, ponteiro_para_incrementador) != 0) /*Verifica se houve erro no spawn da thread*/ {
             perror("Erro ao criar uma thread!");
         }
     }
 
-    // Criar as threads consumidoras:
+    // Criar as threads consumidoras
     for (int thread = 0; thread < NUMERO_DE_THREADS_CONSUMIDORAS; thread++) {
-        if ((pthread_create(&lista_de_threads_consumidoras[thread], NULL, consumidor, &incrementador)) == -1) {
+        if (pthread_create(&lista_de_threads_consumidoras[thread], NULL, consumidor, ponteiro_para_incrementador) != 0) {
             perror("Erro ao criar uma thread!");
         }
     }
 
-    // Esperar que todas as threads produtoras terminem:
+    // Esperar que todas as threads produtoras terminem
     for (int thread = 0; thread < NUMERO_DE_THREADS_PRODUTORAS; thread++) {
-        pthread_join(&lista_de_threads_produtoras[thread], NULL);
+        pthread_join(lista_de_threads_produtoras[thread], NULL);
     }
 
-    // Esperar que todas as threads consumidoras terminem:
+    // Esperar que todas as threads consumidoras terminem
     for (int thread = 0; thread < NUMERO_DE_THREADS_CONSUMIDORAS; thread++) {
-        pthread_join(&lista_de_threads_consumidoras[thread], NULL);
+        pthread_join(lista_de_threads_consumidoras[thread], NULL);
     }
 
     (...)
@@ -351,16 +374,14 @@ int main() {
 ### Criação Dinâmica
 
 ```c
-int pthread_cond_init(pthread_cond_t *cond, const pthread_condattr_t *attr);  // Inicializa o mutex condicional. "cond" é o ponteiro para o mutex condicional a ser inicializado e "attr" são os atributos do mutex condicional (NULL para atributos padrão).
-int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex); // Espera pela condição. "cond" é o ponteiro para o mutex condicional e "mutex" é o ponteiro para o mutex exclusivo associado.
-int pthread_cond_signal(pthread_cond_t *cond); // Sinaliza a condição. "cond" é o ponteiro para o mutex condicional.
+int pthread_cond_init(pthread_cond_t *cond, const pthread_condattr_t *attr); // Inicializa a variável de condição. "cond" é o ponteiro para a variável de condição a ser inicializada e "attr" são os atributos da condição (NULL para atributos padrão).
 ```
 
 Exemplo:
 
 ```c
 #include <stdio.h> // Importar stdio.h para os perrors
-#include <errno.h> // Importar errono.h para os perrors
+#include <errno.h> // Importar errno.h para os perrors
 
 #define NUMERO_DE_THREADS_PRODUTORAS 5
 #define NUMERO_DE_THREADS_CONSUMIDORAS 3
@@ -368,74 +389,81 @@ Exemplo:
 pthread_t lista_de_threads_produtoras[NUMERO_DE_THREADS_PRODUTORAS];
 pthread_t lista_de_threads_consumidoras[NUMERO_DE_THREADS_CONSUMIDORAS];
 
-void* produtor(int* argumento) {
+pthread_mutex_t mutex; // Cria uma variável global para guardar o mutex
+pthread_cond_t cond; // Cria uma variável global para guardar a condição a ser sinalizada 
+
+void* produtor(void* argumento) /* Incrementa um contador até 100, uma vez chegando a 100 termina e sinaliza a condição */ {
     if (argumento != NULL) {
-        while(argumento <= 100) {
+        int *contador = (int*)argumento; 
+
+        while(*contador <= 100) {
             pthread_mutex_lock(&mutex); // Bloqueia o mutex
-            printf("Valor no incrementador: %i", argumento);
-            pthread_cond_signal(&cond); // Sinaliza a condição (desbloqueia uma thread que esteja à espera da condição)
-            argumento++;
+            printf("Valor no incrementador: %i\n", (*contador));
+            (*contador)++;
             pthread_mutex_unlock(&mutex); // Desbloqueia o Mutex
         }
+        pthread_cond_broadcast(&cond); // Sinaliza a condição (desbloqueia as threads que estejam à espera da condição)
     }
+
     return NULL;
 }
 
-void *consumidor(int* argumento) {
+void* consumidor(void* argumento) /* Lê o valor do incrementador e termina */ {
     if (argumento != NULL) {
-        while(argumento <= 100) {
-            pthread_mutex_lock(&mutex); // Bloqueia o mutex
-            pthread_cond_wait(&cond, &mutex); // Espera pela condição (desbloqueia o mutex e bloqueia a thread até que a condição seja sinalizada)
-            printf("Consumidor a processar o valor: %i", argumento);
-            pthread_mutex_unlock(&mutex); // Desbloqueia o Mutex
-        }
+        int *contador = (int*)argumento;
+
+        pthread_mutex_lock(&mutex); // Bloqueia o mutex
+        pthread_cond_wait(&cond, &mutex); // Espera pelo sinal na condição (desbloqueia o mutex e bloqueia a thread até que a condição seja sinalizada, uma vez que a condição é sinalizada o mutex volta a ser bloqueado e a thread desbloqueia assim evitando deadlock)
+        printf("Consumidor a processar o valor: %i\n", (*contador));
+        pthread_mutex_unlock(&mutex); // Desbloqueia o Mutex
     }
+
     return NULL;
 }
 
 int main() {
-    // Criar os mutexs:
-    // mutex condicional
-    pthread_cond_t cond; // Inicializa uma variável para guardar o mutex condicional
-    pthread_cond_init(&cond, NULL); // Inicializa o mutex condicional com os atributos a NULL
-
-    // mutex exclusivo
-    pthread_mutex_t mutex; // Inicializa uma variável para guardar o mutex
+    // Inicializar o mutex 
     pthread_mutex_init(&mutex, NULL);  // Inicializa o mutex com os atributos a NULL
 
-    // Criar as threads produtoras:
+    // Inicializar a condição
+    pthread_cond_init(&cond, NULL); // Inicializa a condição com os atributos a NULL
+
+    // Criar incrementador e um ponteiro do tipo void a apontar para ele para o poder passar por parâmetro
     int incrementador = 1;
+    void* ponteiro_para_incrementador = &incrementador;
+
+    // Criar as threads produtoras
     for (int thread = 0; thread < NUMERO_DE_THREADS_PRODUTORAS; thread++) {
-        if ((pthread_create(&lista_de_threads_produtoras[thread], NULL, produtor, &incrementador /*Este argumento é onde se passam os parâmetros para a função a ser executada pela thread*/)) == -1) /*Verifica se houve erro no spawn da thread*/ {
+        if (pthread_create(&lista_de_threads_produtoras[thread], NULL, produtor, ponteiro_para_incrementador) != 0) /*Verifica se houve erro no spawn da thread*/ {
             perror("Erro ao criar uma thread!");
         }
     }
 
-    // Criar as threads consumidoras:
+    // Criar as threads consumidoras
     for (int thread = 0; thread < NUMERO_DE_THREADS_CONSUMIDORAS; thread++) {
-        if ((pthread_create(&lista_de_threads_consumidoras[thread], NULL, consumidor, &incrementador)) == -1) {
+        if (pthread_create(&lista_de_threads_consumidoras[thread], NULL, consumidor, ponteiro_para_incrementador) != 0) {
             perror("Erro ao criar uma thread!");
         }
     }
 
-    // Esperar que todas as threads produtoras terminem:
+    // Esperar que todas as threads produtoras terminem
     for (int thread = 0; thread < NUMERO_DE_THREADS_PRODUTORAS; thread++) {
-        pthread_join(&lista_de_threads_produtoras[thread], NULL);
+        pthread_join(lista_de_threads_produtoras[thread], NULL);
     }
 
-    // Esperar que todas as threads consumidoras terminem:
+    // Esperar que todas as threads consumidoras terminem
     for (int thread = 0; thread < NUMERO_DE_THREADS_CONSUMIDORAS; thread++) {
-        pthread_join(&lista_de_threads_consumidoras[thread], NULL);
+        pthread_join(lista_de_threads_consumidoras[thread], NULL);
     }
 
     (...)
 }
 ```
 
-## Remover Mutex Condicional
+## Remover Mutex com Condição
 
 ```c
-int pthread_cond_destroy(pthread_cond_t *cond); // Destroi o mutex condicional. "cond" é o ponteiro para o mutex condicional a ser destruído
+int pthread_cond_destroy(pthread_cond_t *cond); // Destroi a condição. "cond" é o ponteiro para a condição a ser destruída
 ```
 
 Exemplo:
@@ -444,8 +472,8 @@ Exemplo:
 int main() {
     (...)
 
-    pthread_cond_destroy(&cond); // Destroi o mutex condicional
-    pthread_mutex_destroy(&mutex); // Destroi o mutex exclusivo
+    pthread_cond_destroy(&cond); // Destroi a condição
+    pthread_mutex_destroy(&mutex); // Destroi o mutex 
 
     return 0;
 }
@@ -473,7 +501,7 @@ Exemplo:
 
 ```c
 #include <stdio.h> // Importar stdio.h para os printfs e perrors
-#include <errno.h> // Importar errono.h para os perrors
+#include <errno.h> // Importar errno.h para os perrors
 #include <pthread.h> // Importar pthread.h para a criação de threads
 
 #define NUMERO_DE_THREADS 10
@@ -523,6 +551,7 @@ int main() {
     (...)
 
     sem_destroy(&semaforo); // Destroi o semáforo associado ao ponteiro passado por argumento
+
     return 0;
 }
 ```
@@ -541,26 +570,26 @@ Exemplo:
 
 ```c
 #include <stdio.h> // Importar stdio.h para os printfs e perrors
-#include <errno.h> // Importar errono.h para os perrors
+#include <errno.h> // Importar errno.h para os perrors
 #include <pthread.h> // Importar pthread.h para a criação de threads
 
 #define NUMERO_DE_THREADS 10
 
-sem_t semaforo; // Declarar globalmente uma variável para guardar o ponteiro para o semáforo
+sem_t* semaforo_nomeado; // Declarar globalmente uma variável para guardar o ponteiro para o semáforo
 pthread_t lista_de_threads[NUMERO_DE_THREADS];
 
 void* tarefa() {
     for (int tarefa = 0; tarefa < 3; tarefa++) {
-    sem_wait(&semaforo); // Decrementa o semáforo
-    sleep(10);
-    sem_post(&semaforo); // Incrementa o semáforo
+        sem_wait(semaforo_nomeado); // Decrementa o semáforo
+        sleep(10);
+        sem_post(semaforo_nomeado); // Incrementa o semáforo
     }
 
     return NULL;
 }
 
 int main() {
-    if ((semaforo_nomeado = sem_open("GUSTAVO", O_CREAT, 0777, 5)) == -1) /*Inicia um semáforo com "5 espaços". Verifica também se existiu algum erro na criação do semáforo*/ {
+    if ((semaforo_nomeado = sem_open("GUSTAVO", O_CREAT, 0777, 5)) == SEM_FAILED) /*Inicia um semáforo com "5 espaços". Verifica também se existiu algum erro na criação do semáforo*/ {
         perror("Erro a iniciar o semáforo!");
     }
 
@@ -591,8 +620,9 @@ Exemplo:
 int main() {
     (...)
 
-    sem_close(&semaforo);
+    sem_close(&semaforo_nomeado);
     sem_unlink("GUSTAVO");
+
     return 0;
 }
 ```
@@ -617,14 +647,14 @@ Exemplo:
 
 ```c
 int main(){
-    shm_id = shmget(2006, sizeof(int), IPC_CREAT | 0777); // Cria um pedido de criação de um espaço de memória partilhada entre processos com as seguintes características: key = 2006 (normalmente tomado como IPC_PRIVATE), tamanho = sizeof(int), flag de criação = IPC_CREAT e flag de premissões = 777. Retorna um id criado a partir das características expecificadas usado para criar, remover e/ou aceder à memória parrtilhada.
+    int shm_id = shmget(2006, sizeof(int), IPC_CREAT | 0777); // Cria um pedido de criação de um espaço de memória partilhada entre processos com as seguintes características: key = 2006 (normalmente tomado como IPC_PRIVATE), tamanho = sizeof(int), flag de criação = IPC_CREAT e flag de premissões = 777. Retorna um id criado a partir das características expecificadas usado para criar, remover e/ou aceder à memória parrtilhada.
     if (shm_id == -1) /*Verifica se existiu algum erro na criação da memória partilhada*/ {
         perror("shmget failed");
         exit(1);
     }
 
     int *shared_memory = (int *)shmat(shm_id, NULL, 0); // Cria o espaço de memória partilhada associada ao id, shm_id. Retorna um ponteiro de acesso à memória partilhada.
-    *shm_init = 0; // Guarda o valor 0 na memória partilhada.
+    *shared_memory = 0; // Guarda o valor 0 na memória partilhada.
 
     (...)
 }
@@ -673,7 +703,7 @@ Exemplo:
 #include <stdio.h> // Importar stdio.h para os printfs
 
 void signal_handler(int signum) {
-    if (signum == SIGKILL) {
+    if (signum == SIGTERM) {
         printf("Terminal signal received (%i)! Terminating the process", signum);
         exit(0);
     } else if (signum == SIGUSR1) {
@@ -688,7 +718,7 @@ void signal_handler(int signum) {
 }
 
 int main(){
-    signal(SIGKILL, signal_handler);
+    signal(SIGTERM, signal_handler);
     signal(SIGUSR1, signal_handler);
 
     return 0;
@@ -703,7 +733,7 @@ Exemplo:
 #include <stdio.h> // Importar stdio.h para os printfs
 
 void KILL_signal_handler(int signum) {
-    if (signum == SIGKILL) {
+    if (signum == SIGTERM) {
         printf("Terminal signal received (%i)! Terminating the process", signum);
     } else if (signum == SIGUSR1) {
         while(1){
@@ -715,7 +745,7 @@ void KILL_signal_handler(int signum) {
 }
 
 void USR1_signal_handler(int signum) {
-    if (signum == SIGKILL) {
+    if (signum == SIGTERM) {
         printf("Terminal signal received (%i)! Terminating the process", signum);
     } else if (signum == SIGUSR1) {
         while(1){
@@ -727,7 +757,7 @@ void USR1_signal_handler(int signum) {
 }
 
 int main(){
-    signal(SIGKILL, KILL_signal_handler);
+    signal(SIGTERM, KILL_signal_handler);
     signal(SIGUSR1, USR1_signal_handler);
 
     return 0;
@@ -829,7 +859,7 @@ int main() {
 
 ```c
 int pipe(int fd_array[2]); // Cria um pipe sem nome, retornando dois file descriptors em fd_array. fd_array[0] é para leitura, fd_array[1] é para escrita. Retorna 0 em caso de sucesso e -1 em caso de erro.
-int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout); // Monitora múltiplos file descriptors. "nfds" é o valor do maior file descriptor + 1 (+1 porque é exclusivo), "readfds" são os FDs a monitorar para leitura, "writefds" para escrita, "exceptfds" para exceções, "timeout" é o tempo máximo de espera (NULL para bloqueio indefinido). Retorna o número de FDs prontos, 0 se ocorrer timeout, e -1 em caso de erro.
+int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout); // Monitora múltiplos file descriptors. "nfds" é o valor do maior file descriptor + 1 (+1 porque é ), "readfds" são os FDs a monitorar para leitura, "writefds" para escrita, "exceptfds" para exceções, "timeout" é o tempo máximo de espera (NULL para bloqueio indefinido). Retorna o número de FDs prontos, 0 se ocorrer timeout, e -1 em caso de erro.
 void FD_ZERO(fd_set *set); // Inicializa um fd_set, limpando todos os bits. Usado antes de adicionar FDs com FD_SET. Não retorna valor.
 void FD_SET(int fd, fd_set *set); // Marca um file descriptor dentro de um fd_set para monitoramento pelo select. "fd" é o file descriptor a adicionar, "set" é o fd_set a atualizar. Não retorna valor.
 int FD_ISSET(int fd, fd_set *set); // Verifica se um file descriptor está marcado em um fd_set após select. Retorna um valor diferente de 0 se o FD está pronto, 0 caso contrário.
@@ -842,7 +872,7 @@ Exemplo:
 
 ```c
 #include <stdio.h> // Importar stdio.h para os printfs e perrors
-#include <errno.h> // Importar errono.h para os perrors
+#include <errno.h> // Importar errno.h para os perrors
 #include <string.h> // Importar string.h para comparação de strings
 #include <stdlib.h> // Importar stdlib.h para a função exit()
 
@@ -1021,7 +1051,7 @@ Exemplo:
 
 ```c
 #include <stdio.h> // Importar stdio.h para os printfs e perrors
-#include <errno.h> // Importar errono.h para os perrors
+#include <errno.h> // Importar errno.h para os perrors
 
 int main() {
     int message_queue_id = msgget(2006, IPC_CREAT | 0777);
@@ -1043,6 +1073,8 @@ int msgsnd(int msqid, const void* message, size_t length, int flags); // Envia a
 Exemplo:
 
 ```c
+#include <string.h> // Include usado para a manipulação e cópia de strings
+
 // Payload da mensagem
 typedef struct {
     char message[1024];
@@ -1062,9 +1094,10 @@ int main() {
     // O processo presidente manda uma mensagem para a fila
     if ((presidente = fork()) == 0) {
         message_t message_from_president;
+        payload_t payload_from_president = {"Manda uma nuke tática na lua."};
 
         message_from_president.PRIORITY = 4;
-        message_from_president.PAYLOAD.message = "Manda uma nuke tática na lua.";
+        message_from_president.PAYLOAD = payload_from_president;
 
         msgsnd(message_queue_id, &message_from_president, sizeof(message_from_president) - sizeof(long), 0); // Insere a mensagem na fila de mensagens associada ao id message_queue_id. my_message é do tipo message_t e 0 significa que não há flags de entrada de mensagem especial
 
@@ -1074,10 +1107,13 @@ int main() {
     }
 
     // O processo vice_presidente manda uma mensagem para a fila
-    message_t message_from_vice_president;
     if ((vice_presidente = fork()) == 0) {
+        message_t message_from_vice_president;
+        payload_t payload_from_vice_president;
+
+        strcpy(payload_from_vice_president.message, "Despede o presidente dos SMTUC.");
         message_from_vice_president.PRIORITY = 3;
-        message_from_vice_president.PAYLOAD.message = "Despede o presidente dos SMTUC.";
+        message_from_vice_president.PAYLOAD = payload_from_vice_president;
 
         msgsnd(message_queue_id, &message_from_vice_president, sizeof(message_from_vice_president) - sizeof(long), 0);
 
@@ -1089,9 +1125,10 @@ int main() {
     // O processo secretario manda uma mensagem para a fila
     if ((secretario = fork()) == 0) {
         message_t message_from_secretario;
+        payload_t payload_from_secretario = {"Já está feito ca**lho!"};
 
         message_from_secretario.PRIORITY = 2;
-        message_from_secretario.PAYLOAD.message = "Já está feito ca**lho!";
+        message_from_secretario.PAYLOAD = payload_from_secretario;
 
         msgsnd(message_queue_id, &message_from_secretario, sizeof(message_from_secretario) - sizeof(long), 0);
 
@@ -1103,11 +1140,13 @@ int main() {
     // O processo Carlos manda uma mensagem para a fila
     if ((Carlos = fork()) == 0) {
         message_t message_from_Carlos;
+        payload_t payload_from_Carlos;
 
-        message_from_carlos.PRIORITY = 1;
-        message_from_carlos.PAYLOAD.message = "Manda vir um frango.";
+        strcpy(payload_from_Carlos.message, "Manda vir um frango.");
+        message_from_Carlos.PRIORITY = 1;
+        message_from_Carlos.PAYLOAD = payload_from_Carlos;
 
-        msgsnd(message_queue_id, &message_from_carlos, sizeof(message_from_carlos) - sizeof(long), 0);
+        msgsnd(message_queue_id, &message_from_Carlos, sizeof(message_from_Carlos) - sizeof(long), 0);
 
         printf("Mensagem enviada com sucesso!");
 
