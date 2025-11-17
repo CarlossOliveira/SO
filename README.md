@@ -171,7 +171,7 @@ pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER; // Cria uma variável global 
 Exemplo:
 
 ```c
-#include <stdio.h> // Importar stdio.h para usar perror
+#include <stdio.h> // Importar stdio.h para usar os printf e perror
 #include <errno.h> // Importar errno.h para usar perror
 
 #define NUMERO_DE_THREADS 5
@@ -220,7 +220,7 @@ int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr);
 Exemplo:
 
 ```c
-#include <stdio.h> // Importar stdio.h para usar perror
+#include <stdio.h> // Importar stdio.h para usar os printf e perror
 #include <errno.h> // Importar errno.h para usar perror
 
 #define NUMERO_DE_THREADS 5
@@ -500,7 +500,7 @@ int sem_init(sem_t *sem, int pshared, unsigned int value); // Inicia o semáforo
 int sem_wait(sem_t *sem); // Decrementa o semáforo se ele não estiver a 0, senão, espera que ele fique maior que 0. "sem" é o ponteiro para o semáforo retornado pela função sem_init.
 int sem_post(sem_t *sem); // Incrementa o semáforo. "sem" é o ponteiro para o semáforo retornado pela função sem_init.
 
-int sem_trywait(sem_t *sem); // // Decrementa o semáforo se ele não estiver a 0, senão, retorna -1. "sem" é o ponteiro para o semáforo retornado pela função sem_init.
+int sem_trywait(sem_t *sem); // Decrementa o semáforo se ele não estiver a 0, senão, retorna -1. "sem" é o ponteiro para o semáforo retornado pela função sem_init.
 ```
 
 Exemplo:
@@ -871,7 +871,7 @@ int main() {
 #include <sys/select.h> // include para select(), FD_ZERO(), FD_SET(), FD_ISSET(),...
 #include <sys/stat.h> // include para mkfifo()
 #include <fcntl.h> // include para open(), O_RDONLY, O_WRONLY,...
-#include <unistd.h> // include para read(), write(), close()
+#include <unistd.h> // include para read(), write(), close(), dup2(),...
 ```
 
 ## **Pipes sem Nome (Unnamed Pipes)**
@@ -887,6 +887,8 @@ int FD_ISSET(int fd, fd_set *set); // Verifica se um file descriptor está marca
 
 ssize_t read(int fd, void *buf, size_t count); // Lê até "count" bytes do file descriptor "fd" e armazena em "buf". Retorna o número de bytes lidos até ao EOF, ou -1 em caso de erro.
 ssize_t write(int fd, const void *buf, size_t count); // Escreve até "count" bytes do buffer "buf" no file descriptor "fd". Retorna o número de bytes escritos, ou -1 em caso de erro.
+
+int dup2(int oldfd, int newfd); // Duplica o file descriptor "oldfd" no "newfd" (fecha o "newfd" antes de duplica-lo). Retorna o novo file descriptor ou -1 em caso de erro.
 ```
 
 Exemplo:
@@ -963,7 +965,7 @@ int main() {
         FD_SET(fd_pipe1[0], &read_set);
         FD_SET(fd_pipe2[0], &read_set);
 
-        if (select((fd_pipe2[0] + 1), &read_set, NULL, NULL, NULL) > 0) /* Verifica se existe algum elemento do set maior que 0 (ou seja, verifica se algum pipe recebeu algo) */ {
+        if (select((fd_pipe2[1] + 1), &read_set, NULL, NULL, NULL) > 0) /* Verifica se existe algum elemento do set maior que 0 (ou seja, verifica se algum pipe recebeu algo) */ {
 
             if (FD_ISSET(fd_pipe1[0], &read_set)) /* Verifica se foi o pipe1 que recebeu algo */ {
                 mensagem_t received_communication; // Cria uma estrutura para guardar a informação recebida no pipe1
@@ -1034,13 +1036,89 @@ int open(const char *pathname, int flags); // Abre um arquivo ou FIFO. "pathname
 
 ssize_t read(int fd, void *buf, size_t count); // Lê até "count" bytes do file descriptor "fd" e armazena em "buf". Retorna o número de bytes lidos até ao EOF, ou -1 em caso de erro.
 ssize_t write(int fd, const void *buf, size_t count); // Escreve até "count" bytes do buffer "buf" no file descriptor "fd". Retorna o número de bytes escritos, ou -1 em caso de erro.
+
+int dup2(int oldfd, int newfd); // Duplica o file descriptor "oldfd" no "newfd" (fecha o "newfd" antes de duplica-lo). Retorna o novo file descriptor ou -1 em caso de erro.
 ```
 
 Exemplo:
 
 ```c
-int main(int numero_de_argumentos, char *argumentos[]) {
+#include <stdio.h> // Importar stdio.h para usar printf e fgets
+#include <stdlib.h> // Importar stdlib.h para gerar números aleatórios
+#include <time.h> // Importat time.h para time()
 
+#define N 6
+
+int fd_named_pipe; // Cria uma variável para guardar o file descriptor do named pipe
+
+int main(int numero_de_argumentos, char *argumentos[]) {
+    // Verifica se o programa está a ser invocado da maneira correta (./programa nome_do_named_pipe)
+    if (numero_de_argumentos < 2) {
+        fprintf("Nome do Named Pipe não especificado.\n");
+        return -1;
+    }
+    // Criar uma variável para guradar o nome do pipe
+    const char* PIPE_NAME = argumentos[1];
+
+    // Cria o pipe com nome. Verifica se houve erro na criação do pipe com nome e trata-o se necessário. Se o pipe já existir, não há erro, mas é retornado 0
+    if(mkfifo(PIPE_NAME, 0600) == -1){
+        fprintf("Error creating named pipe!\n");
+        return -1;
+    }
+
+    if (fork() == 0) {
+        // Abre o named pipe em modo de escrita
+        if((fd_named_pipe = open(PIPE_NAME, O_WRONLY)) == -1){
+            fprintf("Error opening the named pipe!\n");
+            exit(0);
+        }
+
+        // Redirecionamento do STDOUT
+        dup2(fd_named_pipe, STDOUT_FILENO); // Redireciona a saída padrão para o named pipe (STDOUT_FILENO representa o file descriptor da saida padrão)
+        close(fd_named_pipe); // Fecha o file descriptor do named pipe uma vez que a saída padrão já foi redirecionada para o named pipe.
+
+        srand(time(NULL)); // Gera uma seed para os números aleatórios baseada no tempo atual.
+
+        // Geração de um número aleatório
+        for (int numero = 1; numero <= N; numero++) {
+
+            int generated_number = rand();
+            printf("%d", generated_number); // Envia o número gerado pelo pipe named para ser lido pelo processo pai. (Neste caso, como redirecionámos a saída padrão para o pipe, a utilização de printf() é uma maneira eficiente e intuitiva de enviar dados para o pipe)
+        }
+        exit(0);
+    }
+
+    // Abre o named pipe em modo de leitura
+    fd_named_pipe = open(PIPE_NAME, O_RDONLY);
+    if (fd_named_pipe == -1) {
+        fprintf("Erro ao abrir o named pipe para leitura!\n");
+        return -1;
+    }
+    FILE *named_pipe = fdopen(fd_named_pipe, "r"); // FILE *fdopen(int fd, const char *mode); (Serve para abrir um file descriptor e escrever nele segundo o modo especificado, devolve o ponteiro para o file descriptor (FILE))
+    if (named_pipe == NULL) {
+        fprintf("Erro ao abrir o file descriptor!\n");
+        return -1;
+    }
+
+    int numero_de_execucoes_com_sucesso = 0;
+    while(1) {
+
+        char numero[64]; // Variável para guardar o input do vindo do pipe
+        if (fgets(numero, sizeof(numero), named_pipe) == NULL) {
+            fprintf("Erro a ler do named pipe!\n");
+            return -1;
+        } else {
+            printf("Número Recebido: %d\n", atoi(numero)); // Converte o input recebido do pipe para o tipo int e imprime-o na consola
+            numero_de_execucoes_com_sucesso++;
+
+            // Termina o loop de leitura após receber N números aleatórios.
+            if (numero_de_execucoes_com_sucesso == N) {
+                break;
+            }
+        }
+    }
+
+    (...)
 }
 ```
 
@@ -1054,7 +1132,14 @@ int unlink(const char *pathname); // Remove o FIFO ou arquivo do sistema de fich
 Exemplo:
 
 ```c
+int main(int numero_de_argumentos, char *argumentos[]) {
+    (...)
 
+    close(fd_named_pipe); // Fecha o file descriptor do named pipe (também remove-o implicitamente))
+    unlink(argumentos[1]); // Remove o named pipe explicitamente. Neste caso o unlink não é necessário pois o named pipe é implicitamente removido ao fechar o último file descriptor que o referencia.
+
+    return 0;
+}
 ```
 
 ---
@@ -1259,7 +1344,7 @@ Exemplo:
 int main() {
     (...)
 
-    msgctl(message_queue_id, IPC_RMID, NULL); // Apaga a fila de mensagens associada ao id message_queue_id.
+    msgctl(message_queue_id, IPC_RMID, NULL); // Apaga a fila de mensagens associada ao id message_queue_id
 
     return 0;
 }
