@@ -1078,7 +1078,7 @@ int fd_named_pipe; // Cria uma variável para guardar o file descriptor do named
 int main(int numero_de_argumentos, char *argumentos[]) {
     // Verifica se o programa está a ser invocado da maneira correta (./programa nome_do_named_pipe)
     if (numero_de_argumentos < 2) {
-        fprintf("Nome do Named Pipe não especificado.\n");
+        printf("Nome do Named Pipe não especificado.\n");
         return -1;
     }
     // Criar uma variável para guradar o nome do pipe
@@ -1087,14 +1087,14 @@ int main(int numero_de_argumentos, char *argumentos[]) {
     // Cria o pipe com nome. Verifica se houve erro na criação do pipe com nome e trata-o se necessário. Se o pipe já existir, não há erro, mas é retornado 0
     unlink(PIPE_NAME);
     if(mkfifo(PIPE_NAME, 0600) == -1){
-        fprintf("Error creating named pipe!\n");
+        printf("Error creating named pipe!\n");
         return -1;
     }
 
     if (fork() == 0) {
         // Abre o named pipe em modo de escrita
         if((fd_named_pipe = open(PIPE_NAME, O_WRONLY | O_NONBLOCK)) == -1){
-            fprintf("Error opening the named pipe!\n");
+            printf("Error opening the named pipe!\n");
             exit(0);
         }
 
@@ -1116,7 +1116,7 @@ int main(int numero_de_argumentos, char *argumentos[]) {
     // Abre o named pipe em modo de leitura
     fd_named_pipe = open(PIPE_NAME, O_RDONLY | O_NONBLOCK); // A flag O_NONBLOCK é usada para evitar o bloqueio quando, por exemplo, read() é chamado e não existem dados disponíveis para leitura (tornando a operação não bloqueante). ATENÇÃO: Isto não invalida a necessidade de utilizar técnicas de polling ou select() para verificar a disponibilidade de dados antes de ler do pipe, dado que estas estratégias são essenciais para mitigar busy-waiting e otimizar o uso de CPU.
     if (fd_named_pipe == -1) {
-        fprintf("Erro ao abrir o named pipe para leitura!\n");
+        printf("Erro ao abrir o named pipe para leitura!\n");
         return -1;
     }
 
