@@ -734,8 +734,24 @@ void signal_handler(int signum) {
 }
 
 int main(){
+    // Usando signal para tratar SIGTERM e SIGUSR1
     signal(SIGTERM, signal_handler);
-    signal(SIGUSR1, signal_handler);
+
+    // Usando sigaction para tratar SIGUSR1 eSIGUSR2
+    struct sigaction set; // Cria uma variável do tipo struct sigaction para guardar o set de sinais a tratar
+
+    // Define as características do conjunto de sinais a tratar
+    set.sa_handler = signal_handler; // Adiciona um hanfler (signal_handler) ao conjunto de sinais "set"
+    set.sa_flags = 0; // Define as flags do conjunto de sinais "set" a 0
+
+    // Inicializa o conjunto a zeros (inicia o set a vazio)
+    sigemptyset(&set.sa_mask);
+
+    // Adiciona os sinais ao conjunto de sinais. Todos os sinais adicionados aqui serão tratados pela função signal_handler uma vez que a função signal_handler foi associada a este conjunto de sinais
+    sigaction(SIGUSR1, &set, NULL); // Adiciona SIGUSR1 ao conjunto de sinais "set"
+    sigaction(SIGUSR2, &set, NULL); // Adiciona SIGUSR2 ao conjunto de sinais "set"
+
+    while(1); // Loop infinito para manter o programa em execução
 
     return 0;
 }
