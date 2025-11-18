@@ -403,10 +403,12 @@ void* produtor(void* argumento) {
         int *contador = (int*)argumento;
 
         while(*contador <= 100) {
-            pthread_mutex_lock(&mutex); // Bloqueia o mutex
-            printf("Valor no incrementador: %i\n", (*contador));
-            (*contador)++;
-            pthread_mutex_unlock(&mutex); // Desbloqueia o Mutex
+            if (pthread_mutex_trylock(&mutex) == 0) /* Tenta bloquear o mutex, caso este não esteja bloqueado */ {
+                printf("Valor no incrementador: %i\n", (*contador));
+                (*contador)++;
+                pthread_mutex_unlock(&mutex); // Desbloqueia o Mutex
+            }
+            printf("Produtor a aguardar...\n"); // Enquanto o mutex está bloqueado, o produtor aguarda e imprime esta mensagem
         }
         pthread_cond_broadcast(&cond); // Sinaliza a condição (desbloqueia as threads que estejam à espera da condição)
     }
