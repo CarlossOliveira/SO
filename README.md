@@ -708,7 +708,7 @@ int main(){
 ```c
 sighandler_t signal(int signum, sighandler_t handler); // Cria um signal handler. "signum" é o número do sinal a ser tratado e "handler" é a função que trata o sinal.
 
-void sigaction(int signum, const struct sigaction *act, struct sigaction *oldact); // Cria um signal handler. "signum" é o número do sinal a ser tratado, "act" é um ponteiro para a estrutura sigaction que contém a nova ação para o sinal e "oldact" é um ponteiro para a estrutura sigaction que contém a antiga ação para o sinal (pode ser NULL).
+int sigaction(int signum, const struct sigaction *act, struct sigaction *oldact); // Regista uma ação para o sinal. Retorna 0 em caso de sucesso ou -1 em caso de erro.
 ```
 
 ### Tratar de todos os sinais numa função
@@ -737,7 +737,7 @@ int main(){
     // Usando signal para tratar SIGTERM e SIGUSR1
     signal(SIGTERM, signal_handler);
 
-    // Usando sigaction para tratar SIGUSR1 eSIGUSR2
+    // Usando sigaction para tratar SIGUSR1 e SIGUSR2
     struct sigaction set; // Cria uma variável do tipo struct sigaction para guardar o set de sinais a tratar
 
     // Define as características do conjunto de sinais a tratar
@@ -1119,18 +1119,12 @@ int main(int numero_de_argumentos, char *argumentos[]) {
         fprintf("Erro ao abrir o named pipe para leitura!\n");
         return -1;
     }
-    FILE *named_pipe = fdopen(fd_named_pipe, "r"); // FILE *fdopen(int fd, const char *mode); (Serve para abrir um file descriptor e escrever nele segundo o modo especificado, devolve o ponteiro para o file descriptor (FILE))
-    if (named_pipe == NULL) {
-        fprintf("Erro ao abrir o file descriptor!\n");
-        return -1;
-    }
 
     int numero_de_execucoes_com_sucesso = 0;
     while(1) {
-
-        char numero[64]; // Variável para guardar o input do vindo do pipe
-        if (fgets(numero, sizeof(numero), named_pipe) == NULL) {
-            fprintf("Erro a ler do named pipe!\n");
+        char numero[2]; // Variável para guardar o input do vindo do pipe
+        if (read(fd_named_pipe, &numero, sizeof(numero) /* ATENÇÃO: Esta implpementação pode dar origem a erros se não for cuidadosamente gerida, pois read() pode ler menos bytes do que o solicitado*/) == -1) {
+            printf("Erro a ler do named pipe!\n");
             return -1;
         } else {
             printf("Número Recebido: %d\n", atoi(numero)); // Converte o input recebido do pipe para o tipo int e imprime-o na consola
