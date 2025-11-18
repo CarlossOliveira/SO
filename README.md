@@ -408,7 +408,7 @@ void* produtor(void* argumento) {
                 (*contador)++;
                 pthread_mutex_unlock(&mutex); // Desbloqueia o Mutex
             }
-            printf("Produtor a aguardar...\n"); // Enquanto o mutex está bloqueado, o produtor aguarda e imprime esta mensagem
+            printf("Produtor a aguardar...\n"); // Enquanto o mutex está bloqueado, o produtor imprime esta mensagem
         }
         pthread_cond_broadcast(&cond); // Sinaliza a condição (desbloqueia as threads que estejam à espera da condição)
     }
