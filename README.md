@@ -1093,7 +1093,7 @@ int main(int numero_de_argumentos, char *argumentos[]) {
 
     if (fork() == 0) {
         // Abre o named pipe em modo de escrita
-        if((fd_named_pipe = open(PIPE_NAME, O_WRONLY)) == -1){
+        if((fd_named_pipe = open(PIPE_NAME, O_WRONLY | O_NONBLOCK)) == -1){
             fprintf("Error opening the named pipe!\n");
             exit(0);
         }
@@ -1114,7 +1114,7 @@ int main(int numero_de_argumentos, char *argumentos[]) {
     }
 
     // Abre o named pipe em modo de leitura
-    fd_named_pipe = open(PIPE_NAME, O_RDONLY);
+    fd_named_pipe = open(PIPE_NAME, O_RDONLY | O_NONBLOCK); // A flag O_NONBLOCK é usada para evitar o bloqueio quando, por exemplo, read() é chamado e não existem dados disponíveis para leitura (tornando a operação não bloqueante). ATENÇÃO: Isto não invalida a necessidade de utilizar técnicas de polling ou select() para verificar a disponibilidade de dados antes de ler do pipe, dado que estas estratégias são essenciais para mitigar busy-waiting e otimizar o uso de CPU.
     if (fd_named_pipe == -1) {
         fprintf("Erro ao abrir o named pipe para leitura!\n");
         return -1;
