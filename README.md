@@ -747,11 +747,13 @@ int main(){
     // Inicializa o conjunto a zeros (inicia o set a vazio)
     sigemptyset(&set.sa_mask);
 
-    // Adiciona os sinais ao conjunto de sinais. Todos os sinais adicionados aqui serão tratados pela função signal_handler uma vez que a função signal_handler foi associada a este conjunto de sinais
+    // Adiciona os sinais ao conjunto de sinais "set". Todos os sinais aqui adicionados serão tratados pela função signal_handler uma vez que esta foi associada a este conjunto de sinais como handler
     sigaction(SIGUSR1, &set, NULL); // Adiciona SIGUSR1 ao conjunto de sinais "set"
     sigaction(SIGUSR2, &set, NULL); // Adiciona SIGUSR2 ao conjunto de sinais "set"
 
-    while(1); // Loop infinito para manter o programa em execução
+    while(1) {
+        pause(); // Pausa o processo até que um sinal seja recebido
+    }
 
     return 0;
 }
