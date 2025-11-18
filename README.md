@@ -1123,7 +1123,7 @@ int main(int numero_de_argumentos, char *argumentos[]) {
     int numero_de_execucoes_com_sucesso = 0;
     while(1) {
         char numero[2]; // Variável para guardar o input do vindo do pipe
-        if (read(fd_named_pipe, &numero, sizeof(numero) /* ATENÇÃO: Esta implpementação pode dar origem a erros se não for cuidadosamente gerida, pois read() pode ler menos bytes do que o solicitado*/) == -1) {
+        if (read(fd_named_pipe, &numero, sizeof(numero) /* ATENÇÃO: Esta implpementação pode dar origem a erros se não for cuidadosamente gerida, pois read() pode ler menos ou mais bytes do que esperado, dependendo do buffer disponível e do estado do pipe */ ) == -1) {
             printf("Erro a ler do named pipe!\n");
             return -1;
         } else {
