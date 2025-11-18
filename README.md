@@ -61,6 +61,9 @@
 
 ```c
 pid_t fork(void); // Cria um novo processo filho que é uma cópia do processo pai. Retorna o PID do processo filho para o processo pai e 0 para o processo filho. Se houver um erro retorna -1.
+
+pid_t wait(int *wstatus); // Aguarda até que um processo filho termine. Retorna o PID do processo filho terminado ou -1 se houver um erro. O argumento wstatus é usado para retornar o status do processo filho.
+pid_t waitpid(pid_t pid, int *wstatus, int options); // Aguardar por um processo filho específico ou por um conjunto de processos filhos. Retorna o PID do processo filho terminado ou -1 se houver um erro. "pid" pode ser um PID específico, -1 para qualquer processo filho,... "wstatus" é usado para retornar o status do processo filho. "options" permite especificar opções adicionais como WNOHANG, WUNTRACED,...
 ```
 
 Exemplo:
@@ -596,6 +599,7 @@ void* tarefa(void* argumentos) {
 }
 
 int main() {
+    sem_unlink("GUSTAVO");
     if ((semaforo_nomeado = sem_open("GUSTAVO", O_CREAT, 0777, 5)) == SEM_FAILED) /*Inicia um semáforo com "5 espaços". Verifica também se existiu algum erro na criação do semáforo*/ {
         perror("Erro a iniciar o semáforo!");
     }
@@ -1061,6 +1065,7 @@ int main(int numero_de_argumentos, char *argumentos[]) {
     const char* PIPE_NAME = argumentos[1];
 
     // Cria o pipe com nome. Verifica se houve erro na criação do pipe com nome e trata-o se necessário. Se o pipe já existir, não há erro, mas é retornado 0
+    unlink(PIPE_NAME);
     if(mkfifo(PIPE_NAME, 0600) == -1){
         fprintf("Error creating named pipe!\n");
         return -1;
