@@ -14,7 +14,7 @@
    - [**Mutex com Condição**](#mutex-com-condição)
      - [Criar e Iniciar Mutex com Condição](#criar-e-iniciar-mutex-com-condição)
      - [Remover Mutex com Condição](#remover-mutex-com-condição)
-3. [**Semáforos (Semaphores)**](#semáforos-semaphores)
+3. [**Semáforos POSIX (POSIX Semaphores)**](#semáforos-posix-posix-semaphores)
    - [**Semáforos Não Nomeados (Unnamed Semaphores)**](#semáforos-não-nomeados-unnamed-semaphores)
      - [Criar e dar attach em Semáforos Não Nomeados](#criar-e-dar-attach-em-semáforos-não-nomeados)
      - [Remover e/ou dar detach Semáforos Não Nomeados](#remover-eou-dar-detach-semáforos-não-nomeados)
@@ -489,7 +489,7 @@ int main() {
 
 ---
 
-# **Semáforos (Semaphores)**
+# **Semáforos POSIX (POSIX Semaphores)**
 
 ```c
 #include <semaphore.h> // include para sem_init(), sem_wait(), sem_post(), sem_destroy(), sem_open(), sem_close(), sem_unlink()
@@ -506,6 +506,8 @@ int sem_wait(sem_t *sem); // Decrementa o semáforo se ele não estiver a 0, sen
 int sem_post(sem_t *sem); // Incrementa o semáforo. "sem" é o ponteiro para o semáforo retornado pela função sem_init.
 
 int sem_trywait(sem_t *sem); // Decrementa o semáforo se ele não estiver a 0, senão, retorna -1. "sem" é o ponteiro para o semáforo retornado pela função sem_init.
+int sem_getvalue(sem_t *sem, int *sval); // Obtém o valor atual do semáforo. "sem" é o ponteiro para o semáforo retornado pela função sem_init e "sval" é o ponteiro para a variável onde se guarda o valor do semáforo.
+int sem_timedwait(sem_t *sem, const struct timespec *abs_timeout); // Decrementa o semáforo se ele não estiver a 0, senão, espera até ao tempo especificado em abs_timeout. "sem" é o ponteiro para o semáforo retornado pela função sem_init.
 ```
 
 Exemplo:
